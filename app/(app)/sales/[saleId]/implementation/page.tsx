@@ -169,53 +169,53 @@ export default function ImplementationChecklistPage() {
       <Card>
         <CardHeader>
           <h1 className="text-lg font-semibold">Checklist de Implantação</h1>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-brand-navy-600">
             Acompanhe tarefas obrigatórias após assinatura do contrato.
           </p>
         </CardHeader>
         <CardContent className="grid gap-6">
           <div className="grid gap-4 md:grid-cols-2">
-            <div className="rounded-md border border-slate-200 p-3 text-sm">
-              <div className="font-semibold text-slate-700">Ações da venda</div>
+            <div className="rounded-md border border-brand-navy-200 p-3 text-sm">
+              <div className="font-semibold text-brand-navy-700">Ações da venda</div>
               <div className="mt-3">
                 <StatusActionsPanel entityType="SALE" entityId={saleId} />
               </div>
-              <div className="mt-2 text-xs text-slate-500">
+              <div className="mt-2 text-xs text-brand-navy-500">
                 Status: {sale?.status ?? "-"}
               </div>
             </div>
             {checklist ? (
-              <div className="rounded-md border border-slate-200 p-3 text-sm">
-                <div className="font-semibold text-slate-700">Ações do checklist</div>
+              <div className="rounded-md border border-brand-navy-200 p-3 text-sm">
+                <div className="font-semibold text-brand-navy-700">Ações do checklist</div>
                 <div className="mt-3">
                   <StatusActionsPanel entityType="CHECKLIST" entityId={checklist.id} />
                 </div>
-                <div className="mt-2 text-xs text-slate-500">
+                <div className="mt-2 text-xs text-brand-navy-500">
                   Status: {checklist.status}
                 </div>
               </div>
             ) : null}
           </div>
           {!checklist ? (
-            <div className="text-sm text-slate-600">
+            <div className="text-sm text-brand-navy-600">
               Nenhum checklist disponível. Assine o contrato para liberar.
             </div>
           ) : (
             <>
               <div className="grid gap-3 md:grid-cols-3">
-                <div className="rounded-md border border-slate-200 p-3 text-sm">
+                <div className="rounded-md border border-brand-navy-200 p-3 text-sm">
                   Status: {checklist.status}
                 </div>
-                <div className="rounded-md border border-slate-200 p-3 text-sm">
+                <div className="rounded-md border border-brand-navy-200 p-3 text-sm">
                   Progresso: {progress}%
                 </div>
-                <div className="rounded-md border border-slate-200 p-3 text-sm">
+                <div className="rounded-md border border-brand-navy-200 p-3 text-sm">
                   Início: {checklist.startedAt ? new Date(checklist.startedAt).toLocaleDateString("pt-BR") : "-"}
                 </div>
               </div>
               <div className="grid gap-3 md:grid-cols-4">
                 <select
-                  className="h-10 rounded-md border border-slate-300 bg-white px-2 text-sm"
+                  className="h-10 rounded-md border border-brand-navy-300 bg-white px-2 text-sm"
                   value={filters.department}
                   onChange={(event) =>
                     setFilters((prev) => ({ ...prev, department: event.target.value }))
@@ -229,7 +229,7 @@ export default function ImplementationChecklistPage() {
                   <option value="OPERATIONS">Operações</option>
                 </select>
                 <select
-                  className="h-10 rounded-md border border-slate-300 bg-white px-2 text-sm"
+                  className="h-10 rounded-md border border-brand-navy-300 bg-white px-2 text-sm"
                   value={filters.status}
                   onChange={(event) =>
                     setFilters((prev) => ({ ...prev, status: event.target.value }))
@@ -253,21 +253,21 @@ export default function ImplementationChecklistPage() {
                 {filteredItems.map((item) => (
                   <div
                     key={item.id}
-                    className="rounded-md border border-slate-200 p-4 text-sm"
+                    className="rounded-md border border-brand-navy-200 p-4 text-sm"
                   >
                     <div className="flex flex-wrap items-center justify-between gap-3">
                       <div>
-                        <div className="font-semibold text-slate-700">
+                        <div className="font-semibold text-brand-navy-700">
                           {item.title}
                         </div>
-                        <div className="text-slate-500">{item.description}</div>
-                        <div className="text-xs text-slate-400">
+                        <div className="text-brand-navy-500">{item.description}</div>
+                        <div className="text-xs text-brand-navy-400">
                           Departamento: {item.department} | Obrigatório:{" "}
                           {item.isRequired ? "Sim" : "Não"}
                         </div>
                       </div>
                       <select
-                        className="h-9 rounded-md border border-slate-300 bg-white px-2 text-sm"
+                        className="h-9 rounded-md border border-brand-navy-300 bg-white px-2 text-sm"
                         value={item.status}
                         onChange={(event) => updateItemStatus(item.id, event.target.value)}
                       >
@@ -277,7 +277,7 @@ export default function ImplementationChecklistPage() {
                         <option value="BLOCKED">Bloqueado</option>
                       </select>
                     </div>
-                    <div className="mt-2 text-xs text-slate-500">
+                    <div className="mt-2 text-xs text-brand-navy-500">
                       Prazo: {item.dueDate ? new Date(item.dueDate).toLocaleDateString("pt-BR") : "-"}
                     </div>
                     <div className="mt-3 grid gap-2 md:grid-cols-2">
@@ -305,7 +305,7 @@ export default function ImplementationChecklistPage() {
                         }}
                       />
                       {item.evidences?.length ? (
-                        <div className="flex flex-wrap gap-2 text-xs text-slate-600">
+                        <div className="flex flex-wrap gap-2 text-xs text-brand-navy-600">
                           {item.evidences.map((evidence) => (
                             <a
                               key={evidence.id}
@@ -323,7 +323,7 @@ export default function ImplementationChecklistPage() {
                 ))}
               </div>
               <div className="flex items-center gap-3">
-                {status ? <span className="text-sm text-slate-600">{status}</span> : null}
+                {status ? <span className="text-sm text-brand-navy-600">{status}</span> : null}
               </div>
             </>
           )}

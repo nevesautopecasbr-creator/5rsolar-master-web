@@ -152,7 +152,7 @@ export function DynamicForm({
       {fields.map((field) => (
         <div key={field.name} className="grid gap-2">
           {field.type === "checkbox" ? (
-            <label className="flex items-center gap-2 text-sm text-slate-700">
+            <label className="flex items-center gap-2 text-sm text-brand-navy-700">
               <Input
                 type="checkbox"
                 className="h-4 w-4"
@@ -170,15 +170,15 @@ export function DynamicForm({
             <>
               <Label>{field.label}</Label>
               {field.type === "products" ? (
-                <div className="grid gap-2 rounded-md border border-slate-200 p-3">
+                <div className="grid gap-2 rounded-md border border-brand-navy-200 p-3">
                   {productsError ? (
                     <div className="text-sm text-red-600">{productsError}</div>
                   ) : null}
                   {productsLoading ? (
-                    <div className="text-sm text-slate-600">Carregando produtos...</div>
+                    <div className="text-sm text-brand-navy-600">Carregando produtos...</div>
                   ) : null}
                   {!productsError && !productsLoading && products.length === 0 ? (
-                    <div className="text-sm text-slate-600">
+                    <div className="text-sm text-brand-navy-600">
                       Nenhum produto disponível.
                     </div>
                   ) : null}
@@ -197,7 +197,7 @@ export function DynamicForm({
                     return (
                       <label
                         key={product.id}
-                        className="flex items-center justify-between gap-3 rounded-md border border-slate-100 px-3 py-2 text-sm text-slate-700"
+                        className="flex items-center justify-between gap-3 rounded-md border border-brand-navy-100 px-3 py-2 text-sm text-brand-navy-700"
                       >
                         <span className="flex items-center gap-2">
                           <Input
@@ -241,7 +241,7 @@ export function DynamicForm({
                           />
                           <span>{product.name ?? "Produto"}</span>
                         </span>
-                        <span className="text-slate-500">{formatPrice(parsedPrice)}</span>
+                        <span className="text-brand-navy-500">{formatPrice(parsedPrice)}</span>
                       </label>
                     );
                   })}
@@ -260,7 +260,7 @@ export function DynamicForm({
           )}
         </div>
       ))}
-      {status ? <div className="text-sm text-slate-600">{status}</div> : null}
+      {status ? <div className="text-sm text-brand-navy-600">{status}</div> : null}
       <Button type="button" onClick={handleSubmit}>
         Salvar
       </Button>

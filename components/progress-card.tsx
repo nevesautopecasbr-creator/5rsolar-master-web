@@ -17,20 +17,20 @@ export function ProgressCard({
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <div>
-            <h3 className="text-base font-semibold">{title}</h3>
-            <p className="text-xs text-slate-500">{subtitle}</p>
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <h3 className="text-base font-semibold text-brand-navy-900 truncate">{title}</h3>
+            <p className="text-xs text-brand-navy-500 truncate">{subtitle}</p>
           </div>
-          <span className="rounded-full bg-slate-100 px-2 py-1 text-xs text-slate-600">
+          <span className="flex-shrink-0 rounded-full bg-brand-navy-100 px-2.5 py-1 text-xs font-medium text-brand-navy-700">
             {status}
           </span>
         </div>
       </CardHeader>
       <CardContent className="space-y-3">
-        <div className="flex items-center justify-between text-xs text-slate-500">
+        <div className="flex items-center justify-between text-xs text-brand-navy-500">
           <span>Progresso</span>
-          <span>{percent}%</span>
+          <span className="font-medium">{percent}%</span>
         </div>
         <ProgressBar value={percent} />
       </CardContent>

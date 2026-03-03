@@ -8,9 +8,14 @@ type ProgressBarProps = {
 export function ProgressBar({ value, className }: ProgressBarProps) {
   const clamped = Math.min(100, Math.max(0, value));
   return (
-    <div className={cn("h-2 w-full rounded-full bg-slate-200", className)}>
+    <div
+      className={cn(
+        "h-2.5 w-full overflow-hidden rounded-full bg-brand-navy-100",
+        className,
+      )}
+    >
       <div
-        className="h-2 rounded-full bg-emerald-500 transition-all"
+        className="h-full rounded-full bg-brand-orange transition-all duration-300"
         style={{ width: `${clamped}%` }}
       />
     </div>

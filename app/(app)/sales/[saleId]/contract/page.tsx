@@ -178,14 +178,14 @@ export default function ContractSignaturePage() {
       <Card>
         <CardHeader>
           <h1 className="text-lg font-semibold">Assinatura do Contrato</h1>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-brand-navy-600">
             Revise o contrato, confirme o consentimento e capture a assinatura.
           </p>
         </CardHeader>
         <CardContent className="grid gap-6">
           <div className="grid gap-3 md:grid-cols-2">
-            <div className="rounded-md border border-slate-200 p-4 text-sm">
-              <div className="font-semibold text-slate-700">Resumo do Contrato</div>
+            <div className="rounded-md border border-brand-navy-200 p-4 text-sm">
+              <div className="font-semibold text-brand-navy-700">Resumo do Contrato</div>
               <div className="mt-2 grid gap-1">
                 <div>Cliente: {contractSummary.customerName}</div>
                 <div>Documento: {contractSummary.document}</div>
@@ -195,8 +195,8 @@ export default function ContractSignaturePage() {
                 <div>Projeto: {contractSummary.projectName}</div>
               </div>
             </div>
-            <div className="rounded-md border border-slate-200 p-4 text-sm">
-              <div className="font-semibold text-slate-700">Status</div>
+            <div className="rounded-md border border-brand-navy-200 p-4 text-sm">
+              <div className="font-semibold text-brand-navy-700">Status</div>
               <div className="mt-2">Contrato: {contract?.status ?? "-"}</div>
               {contract?.signedAt ? (
                 <div>Assinado em: {new Date(contract.signedAt).toLocaleString("pt-BR")}</div>
@@ -205,7 +205,7 @@ export default function ContractSignaturePage() {
                 <div className="mt-2">
                   <a
                     href={contract.contractPdfUrl}
-                    className="text-slate-700 underline"
+                    className="text-brand-navy-700 underline"
                     target="_blank"
                   >
                     Ver PDF
@@ -215,18 +215,18 @@ export default function ContractSignaturePage() {
             </div>
           </div>
           {contract ? (
-            <div className="rounded-md border border-slate-200 p-4">
-              <div className="text-sm font-semibold text-slate-700">Ações do contrato</div>
+            <div className="rounded-md border border-brand-navy-200 p-4">
+              <div className="text-sm font-semibold text-brand-navy-700">Ações do contrato</div>
               <div className="mt-3">
                 <StatusActionsPanel entityType="CONTRACT" entityId={contract.id} />
               </div>
             </div>
           ) : null}
 
-          <div className="rounded-md border border-slate-200 p-4">
-            <div className="text-sm font-semibold text-slate-700">Preview do contrato</div>
+          <div className="rounded-md border border-brand-navy-200 p-4">
+            <div className="text-sm font-semibold text-brand-navy-700">Preview do contrato</div>
             <div
-              className="mt-3 max-h-64 overflow-auto rounded-md border border-slate-100 bg-white p-3 text-sm"
+              className="mt-3 max-h-64 overflow-auto rounded-md border border-brand-navy-100 bg-white p-3 text-sm"
               dangerouslySetInnerHTML={{
                 __html: contract?.template?.content ?? "<p>Contrato indisponível.</p>",
               }}
@@ -245,7 +245,7 @@ export default function ContractSignaturePage() {
                 onChange={(event) => setSignedDocument(event.target.value)}
               />
             </div>
-            <label className="flex items-center gap-2 text-sm text-slate-700 md:col-span-2">
+            <label className="flex items-center gap-2 text-sm text-brand-navy-700 md:col-span-2">
               <input
                 type="checkbox"
                 checked={consent}
@@ -259,7 +259,7 @@ export default function ContractSignaturePage() {
             <div className="grid gap-2">
               <Label>Tipo de assinatura</Label>
               <select
-                className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm"
+                className="h-10 w-full rounded-md border border-brand-navy-300 bg-white px-3 text-sm"
                 value={signatureType}
                 onChange={(event) =>
                   setSignatureType(event.target.value as "DRAWN" | "UPLOAD")
@@ -281,7 +281,7 @@ export default function ContractSignaturePage() {
             ) : (
               <div className="grid gap-2">
                 <Label>Assinatura (desenhar)</Label>
-                <div className="rounded-md border border-slate-300">
+                <div className="rounded-md border border-brand-navy-300">
                   <canvas
                     ref={canvasRef}
                     width={400}
@@ -304,11 +304,11 @@ export default function ContractSignaturePage() {
             <Button type="button" onClick={handleSign} disabled={loading}>
               {loading ? "Assinando..." : "Assinar e Finalizar"}
             </Button>
-            {status ? <span className="text-sm text-slate-600">{status}</span> : null}
+            {status ? <span className="text-sm text-brand-navy-600">{status}</span> : null}
             {contract?.status === "ACTIVE" ? (
               <a
                 href={`/sales/${saleId}/implementation`}
-                className="text-sm text-slate-700 underline"
+                className="text-sm text-brand-navy-700 underline"
               >
                 Ir para Checklist
               </a>

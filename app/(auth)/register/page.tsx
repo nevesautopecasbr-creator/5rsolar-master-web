@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Logo } from "@/components/logo";
+import { IconSolarRays } from "@/components/icons/solar-icons";
 import { getApiBaseUrl } from "@/lib/api";
 
 export default function RegisterPage() {
@@ -37,10 +39,10 @@ export default function RegisterPage() {
 
   function validatePassword(value: string) {
     const hints: string[] = [];
-    if (value.length < 8) hints.push("Minimo de 8 caracteres.");
-    if (!/[a-z]/.test(value)) hints.push("Pelo menos uma letra minuscula.");
-    if (!/[A-Z]/.test(value)) hints.push("Pelo menos uma letra maiuscula.");
-    if (!/[0-9]/.test(value)) hints.push("Pelo menos um numero.");
+    if (value.length < 8) hints.push("Mínimo de 8 caracteres.");
+    if (!/[a-z]/.test(value)) hints.push("Pelo menos uma letra minúscula.");
+    if (!/[A-Z]/.test(value)) hints.push("Pelo menos uma letra maiúscula.");
+    if (!/[0-9]/.test(value)) hints.push("Pelo menos um número.");
     if (!/[^A-Za-z0-9]/.test(value)) hints.push("Pelo menos um caractere especial.");
     return hints;
   }
@@ -58,12 +60,12 @@ export default function RegisterPage() {
     const hints = validatePassword(password);
     if (hints.length > 0) {
       setPasswordHints(hints);
-      setError("A senha nao atende aos requisitos.");
+      setError("A senha não atende aos requisitos.");
       return;
     }
 
     if (password !== confirmPassword) {
-      setError("As senhas não conferem");
+      setError("As senhas não conferem.");
       return;
     }
 
@@ -85,7 +87,7 @@ export default function RegisterPage() {
 
     if (!response.ok) {
       if (response.status === 409) {
-        setError("Email já cadastrado");
+        setError("Email já cadastrado.");
       } else if (response.status >= 500) {
         setError("Erro interno. Tente novamente.");
       } else {
@@ -98,12 +100,19 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-brand-navy-50 p-4 py-8 md:p-6">
+      <div className="mb-6 flex w-full max-w-md justify-center">
+        <Logo href="/" />
+      </div>
+
       <Card className="w-full max-w-md">
-        <CardHeader>
-          <h1 className="text-lg font-semibold">Criar conta</h1>
-          <p className="text-sm text-slate-600">
-            Informe seu email e senha para criar uma conta.
+        <CardHeader className="space-y-1">
+          <div className="flex items-center gap-2">
+            <IconSolarRays className="h-6 w-6 text-brand-orange" />
+            <h1 className="text-xl font-bold text-brand-navy-900">Criar conta</h1>
+          </div>
+          <p className="text-sm text-brand-navy-600">
+            Informe seus dados para criar uma conta no sistema 5R
           </p>
         </CardHeader>
         <CardContent>
@@ -114,7 +123,7 @@ export default function RegisterPage() {
                 id="name"
                 type="text"
                 value={name}
-                onChange={(event) => setName(event.target.value)}
+                onChange={(e) => setName(e.target.value)}
                 required
               />
             </div>
@@ -124,7 +133,7 @@ export default function RegisterPage() {
                 id="email"
                 type="email"
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
@@ -135,12 +144,12 @@ export default function RegisterPage() {
                 type="tel"
                 placeholder="(00) 00000-0000"
                 value={phone}
-                onChange={(event) => setPhone(event.target.value)}
-                onBlur={(event) => setPhone(formatPhone(event.target.value))}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.preventDefault();
-                    setPhone(formatPhone(event.currentTarget.value));
+                onChange={(e) => setPhone(e.target.value)}
+                onBlur={(e) => setPhone(formatPhone(e.target.value))}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    setPhone(formatPhone(e.currentTarget.value));
                   }
                 }}
                 required
@@ -152,7 +161,7 @@ export default function RegisterPage() {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(event) => setPassword(event.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </div>
@@ -162,19 +171,25 @@ export default function RegisterPage() {
                 id="confirmPassword"
                 type="password"
                 value={confirmPassword}
-                onChange={(event) => setConfirmPassword(event.target.value)}
+                onChange={(e) => setConfirmPassword(e.target.value)}
                 required
               />
             </div>
-            {error ? <div className="text-sm text-red-600">{error}</div> : null}
+            {error ? (
+              <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+                {error}
+              </div>
+            ) : null}
             {passwordHints.length > 0 ? (
-              <div className="text-sm text-slate-600">
+              <div className="rounded-lg bg-brand-navy-50 px-3 py-2 text-sm text-brand-navy-700">
                 {passwordHints.map((hint) => (
-                  <div key={hint}>- {hint}</div>
+                  <div key={hint}>• {hint}</div>
                 ))}
               </div>
             ) : null}
-            <Button type="submit">Criar conta</Button>
+            <Button type="submit" className="mt-2">
+              Criar conta
+            </Button>
           </form>
         </CardContent>
       </Card>

@@ -78,7 +78,7 @@ export default function Page() {
       <Card>
         <CardHeader>
           <h1 className="text-lg font-semibold">Relatórios Financeiros</h1>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-brand-navy-600">
             Fluxo de caixa e custo por cliente.
           </p>
         </CardHeader>
@@ -114,7 +114,7 @@ export default function Page() {
         <CardContent>
         <table className="w-full border-collapse text-sm">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-50">
+            <tr className="border-b border-brand-navy-200 bg-brand-navy-50">
               <th className="px-3 py-2 text-left font-semibold">Tipo</th>
               <th className="px-3 py-2 text-left font-semibold">Entrada</th>
               <th className="px-3 py-2 text-left font-semibold">Saída</th>
@@ -123,7 +123,7 @@ export default function Page() {
           <tbody>
             {cashflow ? (
               <>
-                <tr className="border-b border-slate-100">
+                <tr className="border-b border-brand-navy-100">
                   <td className="px-3 py-2">Previsto</td>
                   <td className="px-3 py-2">
                     {currency.format(cashflow.forecast.inflow)}
@@ -132,7 +132,7 @@ export default function Page() {
                     {currency.format(cashflow.forecast.outflow)}
                   </td>
                 </tr>
-                <tr className="border-b border-slate-100">
+                <tr className="border-b border-brand-navy-100">
                   <td className="px-3 py-2">Realizado</td>
                   <td className="px-3 py-2">
                     {currency.format(cashflow.realized.inflow)}
@@ -144,7 +144,7 @@ export default function Page() {
               </>
             ) : (
               <tr>
-                <td className="px-3 py-6 text-center text-slate-500" colSpan={3}>
+                <td className="px-3 py-6 text-center text-brand-navy-500" colSpan={3}>
                   Carregando relatório...
                 </td>
               </tr>
@@ -161,7 +161,7 @@ export default function Page() {
         <CardContent>
           <table className="w-full border-collapse text-sm">
             <thead>
-              <tr className="border-b border-slate-200 bg-slate-50">
+              <tr className="border-b border-brand-navy-200 bg-brand-navy-50">
                 <th className="px-3 py-2 text-left font-semibold">Cliente</th>
                 <th className="px-3 py-2 text-left font-semibold">Total</th>
               </tr>
@@ -170,21 +170,21 @@ export default function Page() {
               {costByCustomer ? (
                 costByCustomer.items.length > 0 ? (
                   costByCustomer.items.map((item) => (
-                    <tr key={item.customerId ?? item.customerName} className="border-b border-slate-100">
+                    <tr key={item.customerId ?? item.customerName} className="border-b border-brand-navy-100">
                       <td className="px-3 py-2">{item.customerName}</td>
                       <td className="px-3 py-2">{currency.format(item.total)}</td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td className="px-3 py-6 text-center text-slate-500" colSpan={2}>
+                    <td className="px-3 py-6 text-center text-brand-navy-500" colSpan={2}>
                       Nenhum custo encontrado no período.
                     </td>
                   </tr>
                 )
               ) : (
                 <tr>
-                  <td className="px-3 py-6 text-center text-slate-500" colSpan={2}>
+                  <td className="px-3 py-6 text-center text-brand-navy-500" colSpan={2}>
                     Carregando relatório...
                   </td>
                 </tr>

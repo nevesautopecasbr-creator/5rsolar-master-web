@@ -1,8 +1,11 @@
 {
-  "/(auth)/login/page": "app/(auth)/login/page.js",
-  "/(app)/calendar/page": "app/(app)/calendar/page.js",
-  "/(app)/cadastros/customers/new/page": "app/(app)/cadastros/customers/new/page.js",
-  "/(app)/finance/payables/new/page": "app/(app)/finance/payables/new/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
+  "/api/[...path]/route": "app/api/[...path]/route.js",
+  "/(app)/dashboard/page": "app/(app)/dashboard/page.js",
   "/(app)/page": "app/(app)/page.js",
-  "/(app)/cadastros/customers/page": "app/(app)/cadastros/customers/page.js"
+  "/(app)/cadastros/customers/page": "app/(app)/cadastros/customers/page.js",
+  "/(app)/projects/page": "app/(app)/projects/page.js",
+  "/(app)/progress/page": "app/(app)/progress/page.js",
+  "/(app)/cadastros/products/page": "app/(app)/cadastros/products/page.js",
+  "/(app)/cadastros/banks/page": "app/(app)/cadastros/banks/page.js"
 }

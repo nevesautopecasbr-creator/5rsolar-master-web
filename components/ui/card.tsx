@@ -7,7 +7,11 @@ export function Card({
 }: HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={cn("rounded-lg border border-slate-200 bg-white shadow-sm", className)}
+      className={cn(
+        "rounded-xl border border-brand-navy-200/60 bg-white shadow-card transition-shadow duration-200",
+        "hover:shadow-card-hover",
+        className,
+      )}
       {...props}
     />
   );
@@ -17,12 +21,20 @@ export function CardHeader({
   className,
   ...props
 }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("border-b border-slate-200 p-4", className)} {...props} />;
+  return (
+    <div
+      className={cn(
+        "border-b border-brand-navy-100/80 px-5 py-4",
+        className,
+      )}
+      {...props}
+    />
+  );
 }
 
 export function CardContent({
   className,
   ...props
 }: HTMLAttributes<HTMLDivElement>) {
-  return <div className={cn("p-4", className)} {...props} />;
+  return <div className={cn("p-5", className)} {...props} />;
 }

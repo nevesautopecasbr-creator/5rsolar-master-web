@@ -89,27 +89,27 @@ export default function ApprovalsPage() {
       <Card>
         <CardHeader>
           <h1 className="text-lg font-semibold">Central de Aprovações</h1>
-          <p className="text-sm text-slate-600">Pendências que aguardam decisão.</p>
+          <p className="text-sm text-brand-navy-600">Pendências que aguardam decisão.</p>
         </CardHeader>
         <CardContent className="grid gap-4">
-          {loading ? <div className="text-sm text-slate-600">Carregando...</div> : null}
+          {loading ? <div className="text-sm text-brand-navy-600">Carregando...</div> : null}
           {approvals.length === 0 ? (
-            <div className="text-sm text-slate-600">Nenhuma aprovação pendente.</div>
+            <div className="text-sm text-brand-navy-600">Nenhuma aprovação pendente.</div>
           ) : (
             <div className="grid gap-2">
               {approvals.map((approval) => (
                 <button
                   key={approval.id}
-                  className="flex w-full items-center justify-between rounded-md border border-slate-200 px-3 py-2 text-left text-sm hover:bg-slate-50"
+                  className="flex w-full items-center justify-between rounded-md border border-brand-navy-200 px-3 py-2 text-left text-sm hover:bg-brand-navy-50"
                   onClick={() => loadDetails(approval.id)}
                 >
                   <div>
-                    <div className="font-medium text-slate-700">{approval.action}</div>
-                    <div className="text-xs text-slate-500">
+                    <div className="font-medium text-brand-navy-700">{approval.action}</div>
+                    <div className="text-xs text-brand-navy-500">
                       {approval.entityType} • {approval.entityId}
                     </div>
                   </div>
-                  <div className="text-xs text-slate-400">
+                  <div className="text-xs text-brand-navy-400">
                     {new Date(approval.createdAt).toLocaleString("pt-BR")}
                   </div>
                 </button>
@@ -117,7 +117,7 @@ export default function ApprovalsPage() {
             </div>
           )}
 
-          {status ? <div className="text-sm text-slate-600">{status}</div> : null}
+          {status ? <div className="text-sm text-brand-navy-600">{status}</div> : null}
         </CardContent>
       </Card>
 
@@ -125,13 +125,13 @@ export default function ApprovalsPage() {
         <Card>
           <CardHeader>
             <h2 className="text-base font-semibold">Detalhes</h2>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-brand-navy-600">
               {selected.action} • {selected.entityType} • {selected.entityId}
             </p>
           </CardHeader>
           <CardContent className="grid gap-4">
-            <div className="rounded-md border border-slate-200 bg-slate-50 p-3 text-xs">
-              <pre className="whitespace-pre-wrap text-slate-700">
+            <div className="rounded-md border border-brand-navy-200 bg-brand-navy-50 p-3 text-xs">
+              <pre className="whitespace-pre-wrap text-brand-navy-700">
                 {JSON.stringify(selected.payload ?? {}, null, 2)}
               </pre>
             </div>

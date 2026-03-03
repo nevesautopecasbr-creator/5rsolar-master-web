@@ -135,7 +135,7 @@ export function StatusActionsPanel({ entityType, entityId }: Props) {
   return (
     <div className="grid gap-3 text-sm">
       <div className="flex flex-wrap items-center gap-2">
-        <span className="rounded-full bg-slate-100 px-3 py-1 text-xs uppercase text-slate-600">
+        <span className="rounded-full bg-brand-navy-100 px-3 py-1 text-xs uppercase text-brand-navy-600">
           {data?.status ?? "-"}
         </span>
         {data?.isBlocked ? (
@@ -173,7 +173,7 @@ export function StatusActionsPanel({ entityType, entityId }: Props) {
 
       <div className="flex flex-wrap gap-2">
         {loading ? (
-          <span className="text-xs text-slate-500">Carregando ações...</span>
+          <span className="text-xs text-brand-navy-500">Carregando ações...</span>
         ) : data?.allowedActions?.length ? (
           data.allowedActions.map((action) => (
             <Button
@@ -186,30 +186,30 @@ export function StatusActionsPanel({ entityType, entityId }: Props) {
             </Button>
           ))
         ) : (
-          <span className="text-xs text-slate-500">Nenhuma ação disponível.</span>
+          <span className="text-xs text-brand-navy-500">Nenhuma ação disponível.</span>
         )}
       </div>
 
-      {statusMessage ? <div className="text-xs text-slate-600">{statusMessage}</div> : null}
+      {statusMessage ? <div className="text-xs text-brand-navy-600">{statusMessage}</div> : null}
 
       <div className="grid gap-2">
-        <div className="text-xs font-semibold text-slate-700">Histórico</div>
+        <div className="text-xs font-semibold text-brand-navy-700">Histórico</div>
         <div className="grid gap-2">
           {audit.length === 0 ? (
-            <div className="text-xs text-slate-500">Sem eventos.</div>
+            <div className="text-xs text-brand-navy-500">Sem eventos.</div>
           ) : (
             audit.map((entry) => (
-              <div key={entry.id} className="rounded-md border border-slate-200 p-2 text-xs">
-                <div className="text-slate-700">
+              <div key={entry.id} className="rounded-md border border-brand-navy-200 p-2 text-xs">
+                <div className="text-brand-navy-700">
                   {entry.action}
                   {entry.payload?.fromStatus && entry.payload?.toStatus
                     ? ` (${entry.payload.fromStatus} → ${entry.payload.toStatus})`
                     : ""}
                 </div>
                 {entry.payload?.reason ? (
-                  <div className="text-slate-500">Motivo: {entry.payload.reason}</div>
+                  <div className="text-brand-navy-500">Motivo: {entry.payload.reason}</div>
                 ) : null}
-                <div className="text-slate-400">
+                <div className="text-brand-navy-400">
                   {entry.actor?.name ?? "Sistema"} •{" "}
                   {new Date(entry.createdAt).toLocaleString("pt-BR")}
                 </div>
@@ -220,11 +220,11 @@ export function StatusActionsPanel({ entityType, entityId }: Props) {
       </div>
 
       {modalOpen ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-brand-navy-900/40 p-4">
           <div className="w-full max-w-md rounded-md bg-white p-4 shadow-lg">
-            <div className="text-sm font-semibold text-slate-700">Informe o motivo</div>
+            <div className="text-sm font-semibold text-brand-navy-700">Informe o motivo</div>
             <textarea
-              className="mt-3 h-28 w-full rounded-md border border-slate-300 p-2 text-sm"
+              className="mt-3 h-28 w-full rounded-md border border-brand-navy-300 p-2 text-sm"
               value={modalReason}
               onChange={(event) => setModalReason(event.target.value)}
               placeholder="Descreva o motivo da ação."

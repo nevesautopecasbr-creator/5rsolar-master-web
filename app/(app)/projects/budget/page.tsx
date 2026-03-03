@@ -131,7 +131,7 @@ export default function ProjectBudgetPage() {
         <CardHeader className="flex items-center justify-between gap-3 no-print">
           <div>
             <h1 className="text-lg font-semibold">Orçamento de Projetos</h1>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-brand-navy-600">
               Consolide previsão de caixa e margem por período.
             </p>
           </div>
@@ -148,7 +148,7 @@ export default function ProjectBudgetPage() {
           <div className="grid gap-2">
             <Label>Projeto</Label>
             <select
-              className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm"
+              className="h-10 w-full rounded-md border border-brand-navy-300 bg-white px-3 text-sm"
               value={projectId}
               onChange={(event) => setProjectId(event.target.value)}
             >
@@ -182,7 +182,7 @@ export default function ProjectBudgetPage() {
             </Button>
           </div>
           {status ? (
-            <div className="text-sm text-slate-600 md:col-span-2">{status}</div>
+            <div className="text-sm text-brand-navy-600 md:col-span-2">{status}</div>
           ) : null}
         </CardContent>
       </Card>
@@ -201,24 +201,24 @@ export default function ProjectBudgetPage() {
       <Card>
         <CardHeader>
           <h2 className="text-base font-semibold">Fluxo de caixa</h2>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-brand-navy-600">
             {selectedProject?.name ?? "Todos os projetos"}
           </p>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-md border border-slate-200 p-4 text-sm">
+          <div className="rounded-md border border-brand-navy-200 p-4 text-sm">
             Previsão de entradas:{" "}
             {cashflow ? currency.format(cashflow.forecast.inflow) : "--"}
           </div>
-          <div className="rounded-md border border-slate-200 p-4 text-sm">
+          <div className="rounded-md border border-brand-navy-200 p-4 text-sm">
             Previsão de saídas:{" "}
             {cashflow ? currency.format(cashflow.forecast.outflow) : "--"}
           </div>
-          <div className="rounded-md border border-slate-200 p-4 text-sm">
+          <div className="rounded-md border border-brand-navy-200 p-4 text-sm">
             Realizado entradas:{" "}
             {cashflow ? currency.format(cashflow.realized.inflow) : "--"}
           </div>
-          <div className="rounded-md border border-slate-200 p-4 text-sm">
+          <div className="rounded-md border border-brand-navy-200 p-4 text-sm">
             Realizado saídas:{" "}
             {cashflow ? currency.format(cashflow.realized.outflow) : "--"}
           </div>
@@ -228,26 +228,26 @@ export default function ProjectBudgetPage() {
       <Card>
         <CardHeader>
           <h2 className="text-base font-semibold">Margem</h2>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-brand-navy-600">
             {projectId
               ? selectedProject?.name ?? projectId
               : "Selecione um projeto para ver a margem."}
           </p>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-md border border-slate-200 p-4 text-sm">
+          <div className="rounded-md border border-brand-navy-200 p-4 text-sm">
             Receita: {margin ? currency.format(margin.revenue) : "--"}
           </div>
-          <div className="rounded-md border border-slate-200 p-4 text-sm">
+          <div className="rounded-md border border-brand-navy-200 p-4 text-sm">
             Custos diretos: {margin ? currency.format(margin.directCosts) : "--"}
           </div>
-          <div className="rounded-md border border-slate-200 p-4 text-sm">
+          <div className="rounded-md border border-brand-navy-200 p-4 text-sm">
             Custos mão de obra: {margin ? currency.format(margin.laborCosts) : "--"}
           </div>
-          <div className="rounded-md border border-slate-200 p-4 text-sm">
+          <div className="rounded-md border border-brand-navy-200 p-4 text-sm">
             Margem bruta: {margin ? currency.format(margin.grossMargin) : "--"}
           </div>
-          <div className="rounded-md border border-slate-200 p-4 text-sm">
+          <div className="rounded-md border border-brand-navy-200 p-4 text-sm">
             Margem líquida: {margin ? currency.format(margin.netMargin) : "--"}
           </div>
         </CardContent>

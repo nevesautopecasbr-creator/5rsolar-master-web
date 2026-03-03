@@ -223,16 +223,16 @@ export default function PricingSimulatorPage() {
       <Card>
         <CardHeader>
           <h1 className="text-lg font-semibold">Simulador de Preço</h1>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-brand-navy-600">
             Precifique projetos, kits e serviços com base no CMV máximo.
           </p>
         </CardHeader>
         <CardContent className="grid gap-6">
           <div className="grid gap-2 md:grid-cols-3">
             <div className="grid gap-2">
-              <label className="text-sm font-medium text-slate-700">Ano base</label>
+              <label className="text-sm font-medium text-brand-navy-700">Ano base</label>
               <select
-                className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm"
+                className="h-10 w-full rounded-md border border-brand-navy-300 bg-white px-3 text-sm"
                 value={year}
                 onChange={(event) => setYear(Number(event.target.value))}
               >
@@ -246,24 +246,24 @@ export default function PricingSimulatorPage() {
           </div>
           {summary ? (
             <div className="grid gap-3 md:grid-cols-5">
-              <div className="rounded-md border border-slate-200 p-3 text-sm">
+              <div className="rounded-md border border-brand-navy-200 p-3 text-sm">
                 Markup: {summary.markup ? summary.markup.toFixed(2) : "-"}
               </div>
-              <div className="rounded-md border border-slate-200 p-3 text-sm">
+              <div className="rounded-md border border-brand-navy-200 p-3 text-sm">
                 Lucro desejado: {formatPercent(summary.desiredProfitPct)}
               </div>
-              <div className="rounded-md border border-slate-200 p-3 text-sm">
+              <div className="rounded-md border border-brand-navy-200 p-3 text-sm">
                 Despesas fixas: {formatPercent(summary.fixedPct)}
               </div>
-              <div className="rounded-md border border-slate-200 p-3 text-sm">
+              <div className="rounded-md border border-brand-navy-200 p-3 text-sm">
                 Despesas variáveis: {formatPercent(summary.variablePct)}
               </div>
-              <div className="rounded-md border border-slate-200 p-3 text-sm">
+              <div className="rounded-md border border-brand-navy-200 p-3 text-sm">
                 CMV Máx: {formatPercent(summary.cmvMaxPct)}
               </div>
             </div>
           ) : (
-            <div className="text-sm text-slate-600">Carregando resumo...</div>
+            <div className="text-sm text-brand-navy-600">Carregando resumo...</div>
           )}
 
           {summary?.warnings.includes("CMV_MAX_INVALID") ? (
@@ -365,7 +365,7 @@ export default function PricingSimulatorPage() {
               {loading ? "Salvando..." : "Salvar"}
             </Button>
             {isAutosaving ? (
-              <span className="text-sm text-slate-500">Salvando...</span>
+              <span className="text-sm text-brand-navy-500">Salvando...</span>
             ) : null}
             {hasLineErrors ? (
               <span className="text-sm text-red-600">
@@ -373,11 +373,11 @@ export default function PricingSimulatorPage() {
               </span>
             ) : null}
             {lastSavedAt ? (
-              <span className="text-sm text-slate-500">
+              <span className="text-sm text-brand-navy-500">
                 Última atualização: {lastSavedAt.toLocaleTimeString("pt-BR")}
               </span>
             ) : null}
-            {status ? <span className="text-sm text-slate-600">{status}</span> : null}
+            {status ? <span className="text-sm text-brand-navy-600">{status}</span> : null}
           </div>
         </CardContent>
       </Card>

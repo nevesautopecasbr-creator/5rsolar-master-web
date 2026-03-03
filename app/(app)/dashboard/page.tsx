@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ProgressCard } from "@/components/progress-card";
+import { IconSolarRays } from "@/components/icons/solar-icons";
 import { apiFetch } from "@/lib/api";
 
 type Project = {
@@ -89,8 +90,8 @@ export default function DashboardPage() {
   const activeProjects = useMemo(
     () =>
       projects.filter(
-        (project) =>
-          project.status !== "COMPLETED" && project.status !== "CANCELLED",
+        (p) =>
+          p.status !== "COMPLETED" && p.status !== "CANCELLED",
       ).length,
     [projects],
   );
@@ -99,9 +100,7 @@ export default function DashboardPage() {
     const now = Date.now();
     return workOrders.filter((order) => {
       if (!order.scheduledEnd) return false;
-      if (order.status === "COMPLETED" || order.status === "CANCELLED") {
-        return false;
-      }
+      if (order.status === "COMPLETED" || order.status === "CANCELLED") return false;
       return new Date(order.scheduledEnd).getTime() < now;
     }).length;
   }, [workOrders]);
@@ -113,7 +112,7 @@ export default function DashboardPage() {
 
   const progressCards = useMemo(() => {
     const orderList = workOrders
-      .filter((order) => order.status !== "CANCELLED")
+      .filter((o) => o.status !== "CANCELLED")
       .slice(0, 3);
 
     return orderList.map((order) => {
@@ -127,10 +126,9 @@ export default function DashboardPage() {
             : order.status === "IN_PROGRESS"
               ? 50
               : 0;
-      const project = projects.find((item) => item.id === order.projectId);
+      const project = projects.find((p) => p.id === order.projectId);
       const subtitle = project
-        ? `${project.city ?? ""}${project.city && project.state ? " · " : ""}${project.state ?? ""}`.trim() ||
-          project.name
+        ? `${project.city ?? ""}${project.city && project.state ? " · " : ""}${project.state ?? ""}`.trim() || project.name
         : order.projectId;
 
       return {
@@ -155,45 +153,62 @@ export default function DashboardPage() {
   return (
     <div className="grid gap-6">
       <Card>
-        <CardHeader>
-          <h1 className="text-lg font-semibold">Dashboard</h1>
-          <p className="text-sm text-slate-600">
+        <CardHeader className="space-y-1">
+          <div className="flex items-center gap-2">
+            <IconSolarRays className="h-6 w-6 text-brand-orange" />
+            <h1 className="text-display-md text-brand-navy-900">Dashboard</h1>
+          </div>
+          <p className="text-sm text-brand-navy-600">
             Visão geral dos projetos, fluxo de caixa e execução de obras.
           </p>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4 sm:grid-cols-2">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <Link
               href="/projects"
-              className="rounded-md border border-slate-200 p-4 text-sm text-slate-700 hover:bg-slate-50"
+              className="rounded-xl border border-brand-navy-200/60 bg-white p-5 text-sm font-medium text-brand-navy-700 transition-all hover:border-brand-orange/30 hover:bg-brand-orange-50/50 hover:shadow-card-hover"
             >
-              Projetos ativos: {loading ? "..." : activeProjects}
+              <span className="block text-xs font-semibold uppercase tracking-wider text-brand-navy-500">Projetos ativos</span>
+              <span className="mt-1 block text-xl font-bold text-brand-navy-900">
+                {loading ? "..." : activeProjects}
+              </span>
             </Link>
-            <div className="rounded-md border border-slate-200 p-4 text-sm">
-              Fluxo de caixa previsto:{" "}
-              {loading || cashflowForecast === null
-                ? "..."
-                : currency.format(cashflowForecast)}
+            <div className="rounded-xl border border-brand-navy-200/60 bg-white p-5">
+              <span className="block text-xs font-semibold uppercase tracking-wider text-brand-navy-500">Fluxo de caixa previsto</span>
+              <span className="mt-1 block text-xl font-bold text-brand-navy-900">
+                {loading || cashflowForecast === null ? "..." : currency.format(cashflowForecast)}
+              </span>
             </div>
-            <div className="rounded-md border border-slate-200 p-4 text-sm">
-              Obras em atraso: {loading ? "..." : overdueWorkOrders}
+            <div className="rounded-xl border border-brand-navy-200/60 bg-white p-5">
+              <span className="block text-xs font-semibold uppercase tracking-wider text-brand-navy-500">Obras em atraso</span>
+              <span className="mt-1 block text-xl font-bold text-brand-navy-900">
+                {loading ? "..." : overdueWorkOrders}
+              </span>
             </div>
-            <div className="rounded-md border border-slate-200 p-4 text-sm text-slate-600">
-              Margem média: indisponível
+            <div className="rounded-xl border border-brand-navy-200/60 bg-white p-5 text-brand-navy-500">
+              <span className="block text-xs font-semibold uppercase tracking-wider">Margem média</span>
+              <span className="mt-1 block text-sm">indisponível</span>
             </div>
           </div>
         </CardContent>
       </Card>
-      <div>
-        <h2 className="text-base font-semibold">Progresso rápido</h2>
-        <p className="text-sm text-slate-600">
+
+      <div className="space-y-2">
+        <h2 className="text-display-md text-brand-navy-900">Progresso rápido</h2>
+        <p className="text-sm text-brand-navy-600">
           Acompanhe as obras principais em tempo real.
         </p>
       </div>
+
       {progressCards.length === 0 ? (
-        <div className="rounded-md border border-dashed border-slate-200 p-6 text-sm text-slate-600">
-          Nenhuma obra com progresso registrada.
-        </div>
+        <Card className="border-dashed">
+          <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+            <IconSolarRays className="h-10 w-10 text-brand-navy-300" />
+            <p className="mt-3 text-sm text-brand-navy-500">
+              Nenhuma obra com progresso registrada.
+            </p>
+          </CardContent>
+        </Card>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {progressCards.map((card) => (

@@ -180,7 +180,7 @@ export default function CalendarPage() {
         <CardHeader className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-lg font-semibold">Calendário</h1>
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-brand-navy-600">
               Visualize tarefas e pagamentos em um único lugar.
             </p>
           </div>
@@ -218,7 +218,7 @@ export default function CalendarPage() {
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex flex-wrap items-center gap-4 text-sm text-slate-600">
+          <div className="flex flex-wrap items-center gap-4 text-sm text-brand-navy-600">
             <div className="font-semibold capitalize">{monthLabel}</div>
             <label className="flex items-center gap-2">
               <input
@@ -226,7 +226,7 @@ export default function CalendarPage() {
                 checked={showTasks}
                 onChange={(event) => setShowTasks(event.target.checked)}
               />
-              <Link href="/works/orders" className="text-slate-600 hover:text-slate-900">
+              <Link href="/works/orders" className="text-brand-navy-600 hover:text-brand-navy-900">
                 Tarefas
               </Link>
             </label>
@@ -236,12 +236,12 @@ export default function CalendarPage() {
                 checked={showPayables}
                 onChange={(event) => setShowPayables(event.target.checked)}
               />
-              <Link href="/finance/payables" className="text-slate-600 hover:text-slate-900">
+              <Link href="/finance/payables" className="text-brand-navy-600 hover:text-brand-navy-900">
                 Pagamentos a fazer
               </Link>
             </label>
           </div>
-          <div className="grid grid-cols-7 gap-2 text-xs text-slate-500">
+          <div className="grid grid-cols-7 gap-2 text-xs text-brand-navy-500">
             {["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"].map((label) => (
               <div key={label} className="text-center">
                 {label}
@@ -256,13 +256,13 @@ export default function CalendarPage() {
               const dateKey = toDateKey(day.date.toISOString());
               const dayEvents = eventsByDay[dateKey] ?? [];
               return (
-                <div key={day.key} className="min-h-[110px] rounded-md border border-slate-200 p-2">
-                  <div className="text-xs font-semibold text-slate-500">
+                <div key={day.key} className="min-h-[110px] rounded-md border border-brand-navy-200 p-2">
+                  <div className="text-xs font-semibold text-brand-navy-500">
                     {day.date.getDate()}
                   </div>
                   <div className="mt-2 space-y-2">
                     {dayEvents.length === 0 ? (
-                      <div className="text-xs text-slate-400">Sem eventos</div>
+                      <div className="text-xs text-brand-navy-400">Sem eventos</div>
                     ) : (
                       dayEvents.map((event) => (
                         <Link

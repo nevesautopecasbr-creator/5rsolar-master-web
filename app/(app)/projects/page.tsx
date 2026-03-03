@@ -146,7 +146,7 @@ export default function Page() {
 
   const receivablesByProject = useMemo(() => {
     return receivables.reduce<Record<string, number>>((acc, receivable) => {
-      if (!payable.projectId) return acc;
+      if (!receivable.projectId) return acc;
       acc[receivable.projectId] =
         (acc[receivable.projectId] ?? 0) + Number(receivable.amount ?? 0);
       return acc;
@@ -186,24 +186,24 @@ export default function Page() {
       <Card>
         <CardHeader>
           <h1 className="text-lg font-semibold">Projetos</h1>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-brand-navy-600">
             Dados técnicos e consolidação financeira por projeto.
           </p>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
-          <div className="rounded-md border border-slate-200 p-4 text-sm">
+          <div className="rounded-md border border-brand-navy-200 p-4 text-sm">
             Entrada prevista:{" "}
             {cashflow ? currency.format(cashflow.forecast.inflow) : loading ? "..." : "--"}
           </div>
-          <div className="rounded-md border border-slate-200 p-4 text-sm">
+          <div className="rounded-md border border-brand-navy-200 p-4 text-sm">
             Saída prevista:{" "}
             {cashflow ? currency.format(cashflow.forecast.outflow) : loading ? "..." : "--"}
           </div>
-          <div className="rounded-md border border-slate-200 p-4 text-sm">
+          <div className="rounded-md border border-brand-navy-200 p-4 text-sm">
             Entrada realizada:{" "}
             {cashflow ? currency.format(cashflow.realized.inflow) : loading ? "..." : "--"}
           </div>
-          <div className="rounded-md border border-slate-200 p-4 text-sm">
+          <div className="rounded-md border border-brand-navy-200 p-4 text-sm">
             Saída realizada:{" "}
             {cashflow ? currency.format(cashflow.realized.outflow) : loading ? "..." : "--"}
           </div>
@@ -218,12 +218,12 @@ export default function Page() {
           {costByCustomer ? (
             <div className="grid gap-2">
               {costByCustomer.items.length === 0 ? (
-                <div className="text-sm text-slate-500">Sem custos registrados.</div>
+                <div className="text-sm text-brand-navy-500">Sem custos registrados.</div>
               ) : (
                 costByCustomer.items.map((item) => (
                   <div
                     key={item.customerId ?? item.customerName}
-                    className="flex items-center justify-between rounded-md border border-slate-200 px-3 py-2 text-sm"
+                    className="flex items-center justify-between rounded-md border border-brand-navy-200 px-3 py-2 text-sm"
                   >
                     <span>{item.customerName}</span>
                     <span>{currency.format(item.total)}</span>
@@ -232,7 +232,7 @@ export default function Page() {
               )}
             </div>
           ) : (
-            <div className="text-sm text-slate-500">
+            <div className="text-sm text-brand-navy-500">
               {loading ? "Carregando..." : "Sem dados disponíveis."}
             </div>
           )}

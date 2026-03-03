@@ -80,7 +80,7 @@ export default function Page() {
       <div className="grid gap-2">
         <Label>Projeto</Label>
         <select
-          className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm"
+          className="h-10 w-full rounded-md border border-brand-navy-300 bg-white px-3 text-sm"
           value={projectId}
           onChange={(event) => setProjectId(event.target.value)}
         >
@@ -106,7 +106,7 @@ export default function Page() {
       <div className="grid gap-2">
         <Label>Status</Label>
         <select
-          className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm"
+          className="h-10 w-full rounded-md border border-brand-navy-300 bg-white px-3 text-sm"
           value={status}
           onChange={(event) => setStatus(event.target.value)}
         >
@@ -117,7 +117,7 @@ export default function Page() {
         </select>
       </div>
 
-      <div className="grid gap-4 rounded-md border border-slate-200 bg-slate-100/60 p-4">
+      <div className="grid gap-4 rounded-md border border-brand-navy-200 bg-brand-navy-100/60 p-4">
         <div className="grid gap-2">
           <Label>Data da tarefa</Label>
           <Input
@@ -126,7 +126,7 @@ export default function Page() {
             onChange={(event) => setTaskDate(event.target.value)}
           />
         </div>
-        <label className="flex items-center gap-2 text-sm text-slate-700">
+        <label className="flex items-center gap-2 text-sm text-brand-navy-700">
           <input
             type="checkbox"
             checked={multiDay}
@@ -152,7 +152,7 @@ export default function Page() {
       </div>
 
       {message ? (
-        <div className="text-sm text-slate-600">{message}</div>
+        <div className="text-sm text-brand-navy-600">{message}</div>
       ) : null}
       <Button
         type="button"

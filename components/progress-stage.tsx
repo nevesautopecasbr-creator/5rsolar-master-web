@@ -12,7 +12,7 @@ type ProgressStageProps = {
 
 export function ProgressStage({ title, stages }: ProgressStageProps) {
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4">
+    <div className="rounded-lg border border-brand-navy-200 bg-white p-4">
       <div className="mb-3 text-sm font-semibold">{title}</div>
       <div className="space-y-2">
         {stages.map((stage) => (
@@ -22,12 +22,12 @@ export function ProgressStage({ title, stages }: ProgressStageProps) {
                 "flex h-5 w-5 items-center justify-center rounded-full text-xs",
                 stage.done
                   ? "bg-emerald-500 text-white"
-                  : "bg-slate-200 text-slate-500",
+                  : "bg-brand-navy-200 text-brand-navy-500",
               )}
             >
               {stage.done ? "✓" : "•"}
             </span>
-            <span className={stage.done ? "text-slate-700" : "text-slate-400"}>
+            <span className={stage.done ? "text-brand-navy-700" : "text-brand-navy-400"}>
               {stage.label}
             </span>
           </div>

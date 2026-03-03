@@ -340,7 +340,7 @@ export default function PricingPage() {
       <Card>
         <CardHeader>
           <h1 className="text-lg font-semibold">Precificação e Custos</h1>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-brand-navy-600">
             Controle de despesas e parâmetros para cálculo de markup e CMV máximo.
           </p>
         </CardHeader>
@@ -349,7 +349,7 @@ export default function PricingPage() {
             <div className="grid gap-2">
               <Label>Ano base</Label>
               <select
-                className="h-10 w-full rounded-md border border-slate-300 bg-white px-3 text-sm"
+                className="h-10 w-full rounded-md border border-brand-navy-300 bg-white px-3 text-sm"
                 value={year}
                 onChange={(event) => setYear(Number(event.target.value))}
               >
@@ -379,7 +379,7 @@ export default function PricingPage() {
                 onAddRow={addFixedExpense}
                 onRemoveRow={removeFixedExpense}
               />
-              <div className="rounded-md border border-slate-200 p-3 text-sm">
+              <div className="rounded-md border border-brand-navy-200 p-3 text-sm">
                 Total mensal: {formatCurrency(totalFixedMonthly)}
               </div>
             </div>
@@ -401,7 +401,7 @@ export default function PricingPage() {
                 onAddRow={addVariableExpense}
                 onRemoveRow={removeVariableExpense}
               />
-              <div className="rounded-md border border-slate-200 p-3 text-sm">
+              <div className="rounded-md border border-brand-navy-200 p-3 text-sm">
                 Total percentual: {formatPercent(totalVariablePct)}
               </div>
             </div>
@@ -441,10 +441,10 @@ export default function PricingPage() {
               ))}
             </div>
             <div className="grid gap-2 md:grid-cols-2">
-              <div className="rounded-md border border-slate-200 p-3 text-sm">
+              <div className="rounded-md border border-brand-navy-200 p-3 text-sm">
                 Total anual: {formatCurrency(annualRevenue)}
               </div>
-              <div className="rounded-md border border-slate-200 p-3 text-sm">
+              <div className="rounded-md border border-brand-navy-200 p-3 text-sm">
                 Meses de base: {baseMonths}
               </div>
             </div>
@@ -461,25 +461,25 @@ export default function PricingPage() {
                 }
               />
             </div>
-            <div className="rounded-md border border-slate-200 p-3 text-sm">
+            <div className="rounded-md border border-brand-navy-200 p-3 text-sm">
               Markup: {summary.markup ? summary.markup.toFixed(2) : "-"}
             </div>
           </div>
 
           <div className="grid gap-3 md:grid-cols-5">
-            <div className="rounded-md border border-slate-200 p-3 text-sm">
+            <div className="rounded-md border border-brand-navy-200 p-3 text-sm">
               Despesas Fixas: {formatPercent(summary.fixedPct)}
             </div>
-            <div className="rounded-md border border-slate-200 p-3 text-sm">
+            <div className="rounded-md border border-brand-navy-200 p-3 text-sm">
               Despesas Variáveis: {formatPercent(summary.variablePct)}
             </div>
-            <div className="rounded-md border border-slate-200 p-3 text-sm">
+            <div className="rounded-md border border-brand-navy-200 p-3 text-sm">
               Lucro desejado: {formatPercent(summary.desiredProfitPct)}
             </div>
-            <div className="rounded-md border border-slate-200 p-3 text-sm">
+            <div className="rounded-md border border-brand-navy-200 p-3 text-sm">
               CMV Máx: {formatPercent(summary.cmvMaxPct)}
             </div>
-            <div className="rounded-md border border-slate-200 p-3 text-sm">
+            <div className="rounded-md border border-brand-navy-200 p-3 text-sm">
               Markup: {summary.markup ? summary.markup.toFixed(2) : "-"}
             </div>
           </div>
@@ -496,18 +496,18 @@ export default function PricingPage() {
           ) : null}
 
           <div className="flex items-center gap-3">
-            <Button type="button" onClick={handleSave} disabled={loading}>
+            <Button type="button" onClick={() => handleSave()} disabled={loading}>
               {loading ? "Salvando..." : "Salvar"}
             </Button>
             {isAutosaving ? (
-              <span className="text-sm text-slate-500">Salvando...</span>
+              <span className="text-sm text-brand-navy-500">Salvando...</span>
             ) : null}
             {lastSavedAt ? (
-              <span className="text-sm text-slate-500">
+              <span className="text-sm text-brand-navy-500">
                 Última atualização: {lastSavedAt.toLocaleTimeString("pt-BR")}
               </span>
             ) : null}
-            {status ? <span className="text-sm text-slate-600">{status}</span> : null}
+            {status ? <span className="text-sm text-brand-navy-600">{status}</span> : null}
           </div>
         </CardContent>
       </Card>

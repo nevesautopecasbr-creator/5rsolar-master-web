@@ -49,7 +49,7 @@ export function EditableTable<Row>({
       <div className="overflow-x-auto">
         <table className="w-full border-collapse text-sm">
           <thead>
-            <tr className="border-b border-slate-200 bg-slate-50">
+            <tr className="border-b border-brand-navy-200 bg-brand-navy-50">
               {columns.map((column) => (
                 <th
                   key={String(column.key)}
@@ -66,16 +66,16 @@ export function EditableTable<Row>({
               <tr>
                 <td
                   colSpan={columns.length + 1}
-                  className="px-3 py-6 text-center text-slate-500"
+                  className="px-3 py-6 text-center text-brand-navy-500"
                 >
                   Nenhum registro.
                 </td>
               </tr>
             ) : (
               rows.map((row, index) => (
-                <tr key={index} className="border-b border-slate-100">
+                <tr key={index} className="border-b border-brand-navy-100">
                   {columns.map((column) => {
-                    const value = (row as Record<string, unknown>)[column.key];
+                    const value = (row as Record<string, unknown>)[String(column.key)];
                     if (column.render) {
                       return (
                         <td key={String(column.key)} className="px-3 py-2">
@@ -97,7 +97,7 @@ export function EditableTable<Row>({
                       return (
                         <td key={String(column.key)} className="px-3 py-2">
                           <select
-                            className="h-9 w-full rounded-md border border-slate-300 bg-white px-2 text-sm"
+                            className="h-9 w-full rounded-md border border-brand-navy-300 bg-white px-2 text-sm"
                             value={String(value ?? "")}
                             onChange={(event) =>
                               setValue(index, column.key, event.target.value)

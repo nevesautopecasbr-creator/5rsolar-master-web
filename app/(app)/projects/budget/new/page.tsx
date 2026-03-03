@@ -155,7 +155,7 @@ export default function ProjectBudgetNewPage() {
       <Card>
         <CardHeader>
           <h1 className="text-lg font-semibold">Novo Orçamento</h1>
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-brand-navy-600">
             Lançamento de custos, impostos e valor total do projeto.
           </p>
         </CardHeader>
@@ -207,21 +207,21 @@ export default function ProjectBudgetNewPage() {
           </div>
           <div className="grid gap-2 md:col-span-2">
             <Label>Produtos utilizados</Label>
-            <div className="rounded-md border border-slate-200 p-3">
+            <div className="rounded-md border border-brand-navy-200 p-3">
               {productsError ? (
                 <div className="text-sm text-red-600">{productsError}</div>
               ) : null}
               {productsLoading ? (
-                <div className="text-sm text-slate-600">Carregando produtos...</div>
+                <div className="text-sm text-brand-navy-600">Carregando produtos...</div>
               ) : null}
               {!productsLoading && !productsError && products.length === 0 ? (
-                <div className="text-sm text-slate-600">
+                <div className="text-sm text-brand-navy-600">
                   Nenhum produto disponível.
                 </div>
               ) : null}
               {!productsLoading && !productsError && products.length > 0 ? (
                 <div className="grid gap-2 text-sm">
-                  <div className="grid grid-cols-[1fr_140px_120px] items-center gap-3 text-xs text-slate-500">
+                  <div className="grid grid-cols-[1fr_140px_120px] items-center gap-3 text-xs text-brand-navy-500">
                     <span>Produto</span>
                     <span className="text-center">Preço</span>
                     <span className="text-center">Quantidade</span>
@@ -235,12 +235,12 @@ export default function ProjectBudgetNewPage() {
                     return (
                       <div
                         key={product.id}
-                        className="grid grid-cols-[1fr_140px_120px] items-center gap-3 rounded-md border border-slate-100 px-3 py-2"
+                        className="grid grid-cols-[1fr_140px_120px] items-center gap-3 rounded-md border border-brand-navy-100 px-3 py-2"
                       >
                         <label className="flex items-center justify-start gap-2">
                           <input
                             type="checkbox"
-                            className="h-4 w-4 rounded border border-slate-300 text-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-400"
+                            className="h-4 w-4 rounded border border-brand-navy-300 text-brand-navy-900 focus:outline-none focus:ring-2 focus:ring-brand-orange"
                             checked={checked}
                             onChange={(event) => {
                               const isChecked = event.target.checked;
@@ -267,7 +267,7 @@ export default function ProjectBudgetNewPage() {
                           />
                           <span>{product.name ?? "Produto"}</span>
                         </label>
-                        <span className="text-center text-slate-500">
+                        <span className="text-center text-brand-navy-500">
                           {price === null ? "-" : currency.format(price)}
                         </span>
                         <Input
@@ -301,10 +301,10 @@ export default function ProjectBudgetNewPage() {
               type="text"
               value={currency.format(materialCostValue)}
               readOnly
-              className="bg-slate-50 text-right"
+              className="bg-brand-navy-50 text-right"
             />
           </div>
-          <div className="rounded-md border border-slate-200 p-4 text-sm md:col-span-2">
+          <div className="rounded-md border border-brand-navy-200 p-4 text-sm md:col-span-2">
             Total do projeto: {currency.format(totalValue)}
           </div>
           <div className="flex items-end gap-3 md:col-span-2">
@@ -325,7 +325,7 @@ export default function ProjectBudgetNewPage() {
             </Button>
           </div>
           {status ? (
-            <div className="text-sm text-slate-600 md:col-span-2">{status}</div>
+            <div className="text-sm text-brand-navy-600 md:col-span-2">{status}</div>
           ) : null}
         </CardContent>
       </Card>

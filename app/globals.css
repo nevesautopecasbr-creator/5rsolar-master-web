@@ -2,11 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
-html,
-body {
-  height: 100%;
+/* === 5R Energia Solar - Estilos globais === */
+
+@layer base {
+  html,
+  body {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-brand-navy-50 text-brand-navy-900 antialiased;
+  }
+
+  /* Hierarquia tipográfica semântica 5R */
+  h1 {
+    @apply text-2xl font-bold text-brand-navy-900;
+  }
+
+  h2 {
+    @apply text-xl font-semibold text-brand-navy-800;
+  }
+
+  h3 {
+    @apply text-lg font-semibold text-brand-navy-800;
+  }
 }
 
-body {
-  @apply bg-slate-50 text-slate-900;
+@layer components {
+  /* Card padrão 5R */
+  .card-brand {
+    @apply rounded-lg border border-brand-navy-200/60 bg-white shadow-card;
+  }
+
+  .card-brand:hover {
+    @apply shadow-card-hover;
+  }
+
+  /* Botão primário padrão */
+  .btn-brand-primary {
+    @apply bg-brand-orange text-white hover:bg-brand-orange-dark focus:ring-2 focus:ring-brand-orange focus:ring-offset-2;
+  }
+
+  /* Ícone solar - elemento decorativo consistente */
+  .icon-solar {
+    @apply text-brand-orange;
+  }
+}
+
+/* Utilitários para responsividade Tablet/Desktop */
+@screen md {
+  .container-responsive {
+    @apply max-w-4xl mx-auto;
+  }
+}
+
+@screen lg {
+  .container-responsive {
+    @apply max-w-6xl;
+  }
 }

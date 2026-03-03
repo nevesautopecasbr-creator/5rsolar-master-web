@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Logo } from "@/components/logo";
+import { IconSolarRays } from "@/components/icons/solar-icons";
 import { getApiBaseUrl } from "@/lib/api";
 
 export default function LoginPage() {
@@ -30,7 +32,7 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
         credentials: "include",
       });
-    } catch (error) {
+    } catch {
       setError("Falha de conexão com a API");
       return;
     }
@@ -50,11 +52,20 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-50 p-4">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-brand-navy-50 p-4 md:p-6">
+      <div className="mb-8 flex w-full max-w-md justify-center">
+        <Logo href="/" />
+      </div>
+
       <Card className="w-full max-w-md">
-        <CardHeader>
-          <h1 className="text-lg font-semibold">Entrar</h1>
-          <p className="text-sm text-slate-600">Acesse o ERP Energia Solar</p>
+        <CardHeader className="space-y-1">
+          <div className="flex items-center gap-2">
+            <IconSolarRays className="h-6 w-6 text-brand-orange" />
+            <h1 className="text-xl font-bold text-brand-navy-900">Entrar</h1>
+          </div>
+          <p className="text-sm text-brand-navy-600">
+            Acesse o sistema 5R Energia Solar
+          </p>
         </CardHeader>
         <CardContent>
           <form className="grid gap-4" onSubmit={handleSubmit}>
@@ -64,7 +75,7 @@ export default function LoginPage() {
                 id="email"
                 type="email"
                 value={email}
-                onChange={(event) => setEmail(event.target.value)}
+                onChange={(e) => setEmail(e.target.value)}
                 required
               />
             </div>
@@ -74,12 +85,16 @@ export default function LoginPage() {
                 id="password"
                 type="password"
                 value={password}
-                onChange={(event) => setPassword(event.target.value)}
+                onChange={(e) => setPassword(e.target.value)}
                 required
               />
             </div>
-            {error ? <div className="text-sm text-red-600">{error}</div> : null}
-            <div className="grid gap-2">
+            {error ? (
+              <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+                {error}
+              </div>
+            ) : null}
+            <div className="grid gap-3 pt-2">
               <Button type="submit">Entrar</Button>
               <Button
                 type="button"

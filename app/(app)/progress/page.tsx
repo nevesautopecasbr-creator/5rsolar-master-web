@@ -97,17 +97,17 @@ export default function ProgressPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-lg font-semibold">Progresso</h1>
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-brand-navy-600">
           Acompanhamento das obras com base em marcos registrados.
         </p>
       </div>
 
       {loading ? (
-        <div className="rounded-md border border-dashed border-slate-200 p-6 text-sm text-slate-600">
+        <div className="rounded-md border border-dashed border-brand-navy-200 p-6 text-sm text-brand-navy-600">
           Carregando progresso...
         </div>
       ) : progressCards.length === 0 ? (
-        <div className="rounded-md border border-dashed border-slate-200 p-6 text-sm text-slate-600">
+        <div className="rounded-md border border-dashed border-brand-navy-200 p-6 text-sm text-brand-navy-600">
           Nenhuma obra cadastrada para acompanhamento.
         </div>
       ) : (
