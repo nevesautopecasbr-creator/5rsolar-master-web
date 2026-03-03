@@ -1,7 +1,7 @@
 {
   "/(auth)/login/page": "app/(auth)/login/page.js",
   "/(app)/page": "app/(app)/page.js",
-  "/(app)/cadastros/customers/page": "app/(app)/cadastros/customers/page.js",
+  "/(app)/calendar/page": "app/(app)/calendar/page.js",
   "/(app)/cadastros/customers/new/page": "app/(app)/cadastros/customers/new/page.js",
-  "/(app)/calendar/page": "app/(app)/calendar/page.js"
+  "/(app)/cadastros/customers/page": "app/(app)/cadastros/customers/page.js"
 }

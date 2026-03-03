@@ -6,24 +6,24 @@ function isLocalHost(hostname: string) {
 
 export function getApiBaseUrl() {
   const envUrl = process.env.NEXT_PUBLIC_API_URL;
+  const normalize = (url: string) => url.replace(/\/+$/, ""); // evita barra dupla ao concatenar com /api/...
   if (typeof window !== "undefined") {
     const windowBase = `${window.location.protocol}//${window.location.hostname}:3001`;
     if (envUrl) {
       try {
         const envHost = new URL(envUrl).hostname;
         if (isLocalHost(envHost) && !isLocalHost(window.location.hostname)) {
-          return windowBase;
+          return normalize(windowBase);
         }
       } catch {
-        // Ignore invalid env URL and fall back to window base.
-        return windowBase;
+        return normalize(windowBase);
       }
-      return envUrl;
+      return normalize(envUrl);
     }
-    return windowBase;
+    return normalize(windowBase);
   }
   if (envUrl) {
-    return envUrl;
+    return normalize(envUrl);
   }
   return "http://localhost:3001";
 }
