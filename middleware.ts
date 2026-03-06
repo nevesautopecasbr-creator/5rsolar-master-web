@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { SESSION_COOKIE_NAME } from "@/lib/session";
 
 const PUBLIC_PATHS = ["/login", "/register"];
 
@@ -8,9 +9,9 @@ function isPublicPath(pathname: string): boolean {
 
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const accessToken = request.cookies.get("access_token")?.value;
-
-  const isLoggedIn = Boolean(accessToken);
+  // Cookie no domínio do frontend (setado após login); access_token fica no domínio da API
+  const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME)?.value;
+  const isLoggedIn = Boolean(sessionCookie);
 
   if (isPublicPath(pathname)) {
     if (isLoggedIn) {

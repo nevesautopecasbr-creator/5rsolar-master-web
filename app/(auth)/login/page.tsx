@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Logo } from "@/components/logo";
 import { IconSolarRays } from "@/components/icons/solar-icons";
 import { getApiBaseUrl } from "@/lib/api";
+import { setSessionCookie } from "@/lib/session";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -48,6 +49,7 @@ export default function LoginPage() {
       return;
     }
 
+    setSessionCookie();
     router.push("/");
   }
 

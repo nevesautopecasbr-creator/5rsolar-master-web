@@ -4,6 +4,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/logo";
 import { apiFetch } from "@/lib/api";
+import { clearSessionCookie } from "@/lib/session";
 import { useMenu } from "@/components/app-shell";
 import { IconMenu, IconLogout } from "@/components/icons/solar-icons";
 
@@ -12,6 +13,7 @@ export function Topbar() {
   const { menuOpen, setMenuOpen } = useMenu();
 
   async function handleLogout() {
+    clearSessionCookie();
     await apiFetch("/api/auth/logout", { method: "POST" });
     router.push("/login");
   }
