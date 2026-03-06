@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -10,10 +10,13 @@ import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api";
 import { maskCpfCnpj, maskPhone, maskCep } from "@/lib/masks";
 
-type ConsumerUnit = { consumerUnitCode: string; currentConsumptionKwh: string };
+type ConsumerUnit = { id?: string; consumerUnitCode: string; currentConsumptionKwh: string };
 
-export default function NewCustomerPage() {
+export default function EditCustomerPage() {
+  const params = useParams();
   const router = useRouter();
+  const id = params.id as string;
+  const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: "",
@@ -29,30 +32,56 @@ export default function NewCustomerPage() {
     { consumerUnitCode: "", currentConsumptionKwh: "" },
   ]);
 
-  function addConsumerUnit() {
-    setConsumerUnits((prev) => [...prev, { consumerUnitCode: "", currentConsumptionKwh: "" }]);
-  }
-
-  function removeConsumerUnit(idx: number) {
-    setConsumerUnits((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev));
-  }
-
-  function updateConsumerUnit(idx: number, field: keyof ConsumerUnit, value: string) {
-    setConsumerUnits((prev) =>
-      prev.map((uc, i) => (i === idx ? { ...uc, [field]: value } : uc))
-    );
-  }
+  useEffect(() => {
+    let mounted = true;
+    apiFetch(`/api/customers/${id}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (!mounted) return;
+        setForm({
+          name: data.name ?? "",
+          document: maskCpfCnpj(data.document ?? ""),
+          email: data.email ?? "",
+          phone: maskPhone(data.phone ?? ""),
+          address: data.address ?? "",
+          city: data.city ?? "",
+          state: data.state ?? "",
+          zipCode: maskCep(data.zipCode ?? ""),
+        });
+        const ucs = data.consumerUnits ?? [];
+        if (ucs.length > 0) {
+          setConsumerUnits(
+            ucs.map((uc: { consumerUnitCode?: string; currentConsumptionKwh?: number }) => ({
+              consumerUnitCode: String(uc.consumerUnitCode ?? ""),
+              currentConsumptionKwh: uc.currentConsumptionKwh != null ? String(uc.currentConsumptionKwh) : "",
+            })),
+          );
+        } else if (data.consumerUnitCode || data.currentConsumptionKwh != null) {
+          setConsumerUnits([
+            {
+              consumerUnitCode: String(data.consumerUnitCode ?? ""),
+              currentConsumptionKwh: data.currentConsumptionKwh != null ? String(data.currentConsumptionKwh) : "",
+            },
+          ]);
+        }
+      })
+      .catch(() => setStatus("Falha ao carregar cliente"))
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [id]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setStatus(null);
-
     const units = consumerUnits.filter((uc) => uc.consumerUnitCode.trim());
     if (units.length === 0) {
       setStatus("Adicione pelo menos uma unidade consumidora com código UC.");
       return;
     }
-
     const payload = {
       name: form.name.trim(),
       document: form.document.replace(/\D/g, ""),
@@ -70,31 +99,42 @@ export default function NewCustomerPage() {
       })),
     };
 
-    const response = await apiFetch("/api/customers", {
-      method: "POST",
+    const response = await apiFetch(`/api/customers/${id}`, {
+      method: "PATCH",
       body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
-      const msg =
-        err?.message ||
-        (Array.isArray(err?.message) ? err.message.join(", ") : null) ||
-        response.statusText;
+      const msg = err?.message ?? response.statusText;
       setStatus(`Falha ao salvar: ${msg}`);
       return;
     }
 
-    setStatus("Cliente salvo com sucesso.");
+    setStatus("Cliente atualizado com sucesso.");
     router.push("/cadastros/customers");
+  }
+
+  function addConsumerUnit() {
+    setConsumerUnits((prev) => [...prev, { consumerUnitCode: "", currentConsumptionKwh: "" }]);
+  }
+
+  function removeConsumerUnit(idx: number) {
+    setConsumerUnits((prev) => prev.filter((_, i) => i !== idx));
+  }
+
+  if (loading) {
+    return (
+      <div className="text-sm text-brand-navy-600">Carregando...</div>
+    );
   }
 
   return (
     <form onSubmit={handleSubmit} className="grid gap-6">
       <div>
-        <h1 className="text-lg font-semibold">Novo Cliente</h1>
+        <h1 className="text-lg font-semibold">Editar Cliente</h1>
         <p className="text-sm text-brand-navy-600">
-          Cadastre o cliente e as unidades consumidoras. CPF e telefone são obrigatórios.
+          Altere os dados do cliente e das unidades consumidoras.
         </p>
       </div>
 
@@ -127,6 +167,16 @@ export default function NewCustomerPage() {
             />
           </div>
           <div className="grid gap-2">
+            <Label htmlFor="email">E-mail</Label>
+            <Input
+              id="email"
+              type="email"
+              value={form.email}
+              onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+              placeholder="email@exemplo.com"
+            />
+          </div>
+          <div className="grid gap-2">
             <Label htmlFor="phone">Telefone *</Label>
             <Input
               id="phone"
@@ -136,16 +186,6 @@ export default function NewCustomerPage() {
                 setForm((p) => ({ ...p, phone: maskPhone(e.target.value) }))
               }
               placeholder="(00) 00000-0000"
-            />
-          </div>
-          <div className="grid gap-2 sm:col-span-2">
-            <Label htmlFor="email">E-mail</Label>
-            <Input
-              id="email"
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-              placeholder="email@exemplo.com"
             />
           </div>
           <div className="grid gap-2 sm:col-span-2">
@@ -191,15 +231,15 @@ export default function NewCustomerPage() {
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <h2 className="text-base font-medium">Unidades Consumidoras</h2>
             <p className="text-sm text-brand-navy-600">
-              O cliente pode ter mais de uma unidade. Adicione pelo menos uma.
+              O cliente pode ter mais de uma unidade consumidora
             </p>
           </div>
           <Button type="button" variant="outline" onClick={addConsumerUnit}>
-            + Adicionar UC
+            Adicionar UC
           </Button>
         </CardHeader>
         <CardContent className="grid gap-4">
@@ -213,9 +253,13 @@ export default function NewCustomerPage() {
                 <Input
                   value={uc.consumerUnitCode}
                   onChange={(e) =>
-                    updateConsumerUnit(idx, "consumerUnitCode", e.target.value)
+                    setConsumerUnits((prev) =>
+                      prev.map((p, i) =>
+                        i === idx ? { ...p, consumerUnitCode: e.target.value } : p,
+                      ),
+                    )
                   }
-                  placeholder="Código na concessionária"
+                  placeholder="Código UC na concessionária"
                 />
               </div>
               <div className="grid flex-1 min-w-[120px] gap-2">
@@ -225,7 +269,11 @@ export default function NewCustomerPage() {
                   inputMode="decimal"
                   value={uc.currentConsumptionKwh}
                   onChange={(e) =>
-                    updateConsumerUnit(idx, "currentConsumptionKwh", e.target.value)
+                    setConsumerUnits((prev) =>
+                      prev.map((p, i) =>
+                        i === idx ? { ...p, currentConsumptionKwh: e.target.value } : p,
+                      ),
+                    )
                   }
                   placeholder="Ex: 500"
                 />
@@ -234,7 +282,7 @@ export default function NewCustomerPage() {
                 type="button"
                 variant="ghost"
                 onClick={() => removeConsumerUnit(idx)}
-                disabled={consumerUnits.length === 1}
+                disabled={consumerUnits.length <= 1}
               >
                 Remover
               </Button>
