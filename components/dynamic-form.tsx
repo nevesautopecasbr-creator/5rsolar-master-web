@@ -13,6 +13,10 @@ export type FormField = {
   type?: string;
   placeholder?: string;
   defaultValue?: string | boolean;
+  /** Para type "select": URL para buscar opções (ex: /api/roles) */
+  optionsUrl?: string;
+  optionValueKey?: string;
+  optionLabelKey?: string;
 };
 
 type DynamicFormProps = {
@@ -68,11 +72,48 @@ export function DynamicForm({
   const [products, setProducts] = useState<ProductOption[]>([]);
   const [productsError, setProductsError] = useState<string | null>(null);
   const [productsLoading, setProductsLoading] = useState(false);
+  const [selectOptions, setSelectOptions] = useState<
+    Record<string, Array<{ value: string; label: string }>>
+  >({});
+  const [selectLoading, setSelectLoading] = useState<Record<string, boolean>>({});
 
   const hasProductsField = useMemo(
     () => fields.some((field) => field.type === "products"),
     [fields],
   );
+
+  const selectFields = useMemo(
+    () => fields.filter((f) => f.type === "select" && f.optionsUrl),
+    [fields],
+  );
+
+  useEffect(() => {
+    if (selectFields.length === 0) return;
+    let isActive = true;
+    for (const field of selectFields) {
+      if (!field.optionsUrl) continue;
+      setSelectLoading((prev) => ({ ...prev, [field.name]: true }));
+      apiFetch(field.optionsUrl)
+        .then((r) => r.json())
+        .then((data: Array<Record<string, unknown>>) => {
+          if (!isActive) return;
+          const valKey = field.optionValueKey ?? "id";
+          const labelKey = field.optionLabelKey ?? "name";
+          const options = (Array.isArray(data) ? data : []).map((item) => ({
+            value: String(item[valKey] ?? ""),
+            label: String(item[labelKey] ?? item[valKey] ?? "-"),
+          }));
+          setSelectOptions((prev) => ({ ...prev, [field.name]: options }));
+        })
+        .catch(() => {
+          if (isActive) setSelectOptions((prev) => ({ ...prev, [field.name]: [] }));
+        })
+        .finally(() => {
+          if (isActive) setSelectLoading((prev) => ({ ...prev, [field.name]: false }));
+        });
+    }
+    return () => { isActive = false; };
+  }, [selectFields]);
 
   useEffect(() => {
     if (!hasProductsField) {
@@ -246,6 +287,27 @@ export function DynamicForm({
                     );
                   })}
                 </div>
+              ) : field.type === "select" && field.optionsUrl ? (
+                <>
+                  {selectLoading[field.name] ? (
+                    <div className="text-sm text-brand-navy-600">Carregando...</div>
+                  ) : (
+                    <select
+                      className="flex h-9 w-full rounded-md border border-brand-navy-300 bg-white px-3 py-1.5 text-sm text-brand-navy-800 focus:border-brand-orange focus:outline-none focus:ring-1 focus:ring-brand-orange"
+                      value={String(form[field.name] ?? "")}
+                      onChange={(e) =>
+                        setForm((prev) => ({ ...prev, [field.name]: e.target.value }))
+                      }
+                    >
+                      <option value="">Selecione...</option>
+                      {(selectOptions[field.name] ?? []).map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                </>
               ) : (
                 <Input
                   type={field.type ?? "text"}

@@ -117,13 +117,14 @@ export function DataTable({
                     {columns.map((col) => {
                       const value = row[col.key] ?? "-";
                       if (typeof value === "string" && value.startsWith("/")) {
+                        const label = value.includes("/edit") ? "Editar" : "Acessar";
                         return (
                           <td key={col.key} className="px-3 py-2.5">
                             <Link
                               className="font-medium text-brand-orange hover:underline"
                               href={value}
                             >
-                              Acessar
+                              {label}
                             </Link>
                           </td>
                         );
