@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api";
+import { COMPANY_CONTEXT_UPDATED } from "@/lib/session";
 
 type Role = { id: string; name: string };
 
@@ -28,9 +29,14 @@ export default function NewUserPage() {
   });
 
   useEffect(() => {
-    const cid =
-      typeof window !== "undefined" ? localStorage.getItem("companyId") : null;
-    setCompanyId(cid);
+    const sync = () => setCompanyId(typeof window !== "undefined" ? localStorage.getItem("companyId") : null);
+    sync();
+    window.addEventListener("storage", sync);
+    window.addEventListener(COMPANY_CONTEXT_UPDATED, sync);
+    return () => {
+      window.removeEventListener("storage", sync);
+      window.removeEventListener(COMPANY_CONTEXT_UPDATED, sync);
+    };
   }, []);
 
   useEffect(() => {
@@ -113,12 +119,11 @@ export default function NewUserPage() {
   return (
     <ModuleForm
       title="Novo Usuário"
-      description="Criar usuário e definir acesso. Selecione uma empresa no menu antes de criar."
+      description="Criar usuário e definir acesso. O usuário será vinculado à sua empresa (definida no login)."
     >
       {!companyId && (
         <div className="mb-4 rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm text-amber-800">
-          <strong>Atenção:</strong> Selecione uma empresa no menu (canto superior)
-          antes de criar o usuário. O perfil é vinculado à empresa selecionada.
+          <strong>Atenção:</strong> Sua empresa não está definida. Faça logout e login novamente para carregar o contexto da empresa.
         </div>
       )}
       <form className="grid gap-4" onSubmit={handleSubmit}>
@@ -190,7 +195,7 @@ export default function NewUserPage() {
           </select>
           {!companyId && roles.length === 0 && !rolesLoading && (
             <p className="text-sm text-amber-600">
-              Selecione uma empresa para carregar os perfis disponíveis.
+              Faça logout e login novamente para carregar os perfis da sua empresa.
             </p>
           )}
         </div>

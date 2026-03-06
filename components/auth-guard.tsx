@@ -2,6 +2,8 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
+import { apiFetch } from "@/lib/api";
+import { setUserCompanyContext } from "@/lib/session";
 
 const SESSION_COOKIE_NAME = "app_session";
 
@@ -23,6 +25,22 @@ export function AuthGuard({ children }: { children: ReactNode }) {
       router.replace(`/login${from}`);
     }
   }, [router, pathname]);
+
+  // Sincroniza empresa do usuário (contexto) ao entrar na app
+  useEffect(() => {
+    if (!allowed) return;
+    let cancelled = false;
+    apiFetch("/api/auth/me", { method: "GET" })
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { companyId?: string | null; companyName?: string | null } | null) => {
+        if (cancelled || !data) return;
+        setUserCompanyContext(data.companyId ?? null, data.companyName ?? null);
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [allowed]);
 
   if (allowed !== true) {
     return (

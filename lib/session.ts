@@ -14,6 +14,30 @@ export function setSessionCookie() {
 export function clearSessionCookie() {
   if (typeof document === "undefined") return;
   document.cookie = `${SESSION_COOKIE}=; path=/; max-age=0`;
+  try {
+    localStorage.removeItem("companyId");
+    localStorage.removeItem("companyName");
+  } catch {
+    // ignore
+  }
+}
+
+export const COMPANY_ID_KEY = "companyId";
+export const COMPANY_NAME_KEY = "companyName";
+
+export const COMPANY_CONTEXT_UPDATED = "company-context-updated";
+
+export function setUserCompanyContext(companyId: string | null, companyName: string | null) {
+  if (typeof document === "undefined") return;
+  try {
+    if (companyId != null) localStorage.setItem(COMPANY_ID_KEY, companyId);
+    else localStorage.removeItem(COMPANY_ID_KEY);
+    if (companyName != null) localStorage.setItem(COMPANY_NAME_KEY, companyName);
+    else localStorage.removeItem(COMPANY_NAME_KEY);
+    window.dispatchEvent(new CustomEvent(COMPANY_CONTEXT_UPDATED));
+  } catch {
+    // ignore
+  }
 }
 
 export const SESSION_COOKIE_NAME = SESSION_COOKIE;

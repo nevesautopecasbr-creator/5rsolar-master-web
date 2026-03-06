@@ -1,16 +1,31 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { navSections } from "@/lib/nav";
 import { useMenu } from "@/components/app-shell";
 import { Logo } from "@/components/logo";
+import { COMPANY_NAME_KEY, COMPANY_CONTEXT_UPDATED } from "@/lib/session";
 import { IconChevronDown, IconChevronRight, IconSolarRays } from "@/components/icons/solar-icons";
 
 export function Sidebar() {
   const { menuOpen } = useMenu();
   const pathname = usePathname();
+  const [companyName, setCompanyName] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const sync = () => setCompanyName(localStorage.getItem(COMPANY_NAME_KEY));
+    sync();
+    window.addEventListener("storage", sync);
+    window.addEventListener(COMPANY_CONTEXT_UPDATED, sync);
+    return () => {
+      window.removeEventListener("storage", sync);
+      window.removeEventListener(COMPANY_CONTEXT_UPDATED, sync);
+    };
+  }, []);
+
   const initialState = useMemo(
     () =>
       Object.fromEntries(navSections.map((section) => [section.title, true])),
@@ -27,7 +42,15 @@ export function Sidebar() {
       className="fixed inset-y-0 left-0 z-40 flex h-full w-72 flex-col border-r border-brand-navy-200/80 bg-white shadow-lg lg:relative lg:z-auto lg:w-64 lg:flex-shrink-0 lg:shadow-sm xl:w-72"
       aria-label="Menu principal"
     >
-      {/* Logo 5R - posicionamento correto no sidebar */}
+      {/* Nome da empresa no topo do menu */}
+      {companyName ? (
+        <div className="border-b border-brand-navy-100 bg-brand-navy-50/50 px-4 py-3">
+          <p className="truncate text-sm font-semibold text-brand-navy-800" title={companyName}>
+            {companyName}
+          </p>
+        </div>
+      ) : null}
+      {/* Logo 5R */}
       <div className="border-b border-brand-navy-100 px-5 py-5">
         <Logo href="/" variant="compact" />
       </div>
