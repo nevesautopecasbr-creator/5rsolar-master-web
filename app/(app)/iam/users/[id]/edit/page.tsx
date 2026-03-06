@@ -74,29 +74,36 @@ export default function EditUserPage() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    e.stopPropagation();
     setStatus(null);
     setSaving(true);
-    const payload: Record<string, unknown> = {
-      name: form.name,
-      email: form.email,
-      phone: form.phone || undefined,
-      isActive: form.isActive,
-      roleId: form.roleId || undefined,
-    };
-    if (form.password.trim()) {
-      payload.password = form.password;
+    try {
+      const payload: Record<string, unknown> = {
+        name: form.name,
+        email: form.email,
+        phone: form.phone || undefined,
+        isActive: form.isActive,
+        roleId: form.roleId || undefined,
+      };
+      if (form.password.trim()) {
+        payload.password = form.password;
+      }
+      const response = await apiFetch(`/api/users/${id}`, {
+        method: "PATCH",
+        body: JSON.stringify(payload),
+      });
+      if (!response.ok) {
+        const errText = await response.text();
+        setStatus(`Falha ao salvar: ${response.status} ${errText || response.statusText}`);
+        return;
+      }
+      setStatus("Salvo com sucesso");
+      router.push("/iam/users");
+    } catch (err) {
+      setStatus(`Erro: ${err instanceof Error ? err.message : "Falha ao salvar"}`);
+    } finally {
+      setSaving(false);
     }
-    const response = await apiFetch(`/api/users/${id}`, {
-      method: "PATCH",
-      body: JSON.stringify(payload),
-    });
-    setSaving(false);
-    if (!response.ok) {
-      setStatus("Falha ao salvar");
-      return;
-    }
-    setStatus("Salvo com sucesso");
-    router.push("/iam/users");
   }
 
   if (loading) {
@@ -122,7 +129,15 @@ export default function EditUserPage() {
       title="Editar Usuário"
       description="Altere os dados e o perfil (role) do usuário"
     >
-      <form className="grid gap-4" onSubmit={handleSubmit}>
+      <form
+        className="grid gap-4"
+        onSubmit={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          void handleSubmit(e);
+          return false;
+        }}
+      >
         <div className="grid gap-2">
           <Label htmlFor="name">Nome</Label>
           <Input
