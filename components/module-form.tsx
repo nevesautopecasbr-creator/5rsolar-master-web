@@ -15,7 +15,7 @@ export function ModuleForm({ title, description, children }: ModuleFormProps) {
         <p className="text-sm text-brand-navy-600">{description}</p>
       </CardHeader>
       <CardContent>
-        <form className="grid gap-4">{children}</form>
+        {children}
       </CardContent>
     </Card>
   );

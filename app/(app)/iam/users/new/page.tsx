@@ -66,7 +66,7 @@ export default function NewUserPage() {
 
     if (!companyId) {
       setStatus(
-        "Selecione uma empresa no menu antes de criar o usuário. O perfil do usuário é vinculado à empresa selecionada.",
+        "Sua empresa não está definida no contexto. Faça logout e login novamente.",
       );
       return;
     }
