@@ -37,6 +37,9 @@ export default function EditBudgetPage() {
     consumptionKwh: "",
     consumerUnitCode: "",
     systemPowerKwp: "",
+    monthlySavings: "",
+    paybackYears: "",
+    paymentTerms: "",
     laborCost: "0",
     materialCost: "0",
     taxAmount: "0",
@@ -44,6 +47,8 @@ export default function EditBudgetPage() {
     notes: "",
   });
   const [budgetProducts, setBudgetProducts] = useState<BudgetProduct[]>([]);
+  const [proposalPdfUrl, setProposalPdfUrl] = useState<string | null>(null);
+  const [generatingPdf, setGeneratingPdf] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -62,12 +67,16 @@ export default function EditBudgetPage() {
           consumptionKwh: budget.consumptionKwh != null ? String(budget.consumptionKwh) : "",
           consumerUnitCode: budget.consumerUnitCode ?? "",
           systemPowerKwp: budget.systemPowerKwp != null ? String(budget.systemPowerKwp) : "",
+          monthlySavings: budget.monthlySavings != null ? maskMoneyFromNumber(Number(budget.monthlySavings)) : "",
+          paybackYears: budget.paybackYears != null ? String(budget.paybackYears) : "",
+          paymentTerms: budget.paymentTerms ?? "",
           laborCost: budget.laborCost != null ? maskMoneyFromNumber(Number(budget.laborCost)) : "0,00",
           materialCost: budget.materialCost != null ? maskMoneyFromNumber(Number(budget.materialCost)) : "0,00",
           taxAmount: budget.taxAmount != null ? maskMoneyFromNumber(Number(budget.taxAmount)) : "0,00",
           otherCosts: budget.otherCosts != null ? maskMoneyFromNumber(Number(budget.otherCosts)) : "0,00",
           notes: budget.notes ?? "",
         });
+        setProposalPdfUrl(budget.proposalPdfUrl ?? null);
         const used = budget.productsUsed;
         if (Array.isArray(used) && used.length > 0) {
           setBudgetProducts(
@@ -147,6 +156,29 @@ export default function EditBudgetPage() {
   const productsSubtotal = budgetProducts.reduce((s, p) => s + p.price * p.quantity, 0);
   const totalValue = productsSubtotal + labor + material + tax + other;
 
+  async function handleGeneratePdf() {
+    setGeneratingPdf(true);
+    setStatus(null);
+    try {
+      const r = await apiFetch(`/api/project-budgets/${id}/generate-pdf`, { method: "POST" });
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        setStatus("Falha ao gerar PDF: " + (err?.message ?? r.statusText));
+        return;
+      }
+      const data = await r.json();
+      const url = data?.proposalPdfUrl;
+      if (url) {
+        setProposalPdfUrl(url);
+        window.open(url, "_blank");
+      }
+    } catch {
+      setStatus("Erro ao gerar PDF.");
+    } finally {
+      setGeneratingPdf(false);
+    }
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setStatus(null);
@@ -156,6 +188,9 @@ export default function EditBudgetPage() {
       consumptionKwh: form.consumptionKwh ? Number(form.consumptionKwh.replace(",", ".")) : undefined,
       consumerUnitCode: form.consumerUnitCode.trim() || undefined,
       systemPowerKwp: form.systemPowerKwp ? Number(form.systemPowerKwp.replace(",", ".")) : undefined,
+      monthlySavings: form.monthlySavings ? parseMoney(form.monthlySavings) : undefined,
+      paybackYears: form.paybackYears ? Number(form.paybackYears.replace(",", ".")) : undefined,
+      paymentTerms: form.paymentTerms.trim() || undefined,
       laborCost: labor,
       materialCost: material,
       taxAmount: tax,
@@ -248,30 +283,67 @@ export default function EditBudgetPage() {
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="grid gap-2">
-              <Label htmlFor="consumptionKwh">Consumo (kWh/mês)</Label>
-              <Input
-                id="consumptionKwh"
-                type="text"
-                inputMode="decimal"
-                value={form.consumptionKwh}
-                onChange={(e) => setForm((p) => ({ ...p, consumptionKwh: e.target.value }))}
-                placeholder="Ex: 500"
-              />
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="grid gap-2">
+                <Label htmlFor="consumptionKwh">Consumo (kWh/mês)</Label>
+                <Input
+                  id="consumptionKwh"
+                  type="text"
+                  inputMode="decimal"
+                  value={form.consumptionKwh}
+                  onChange={(e) => setForm((p) => ({ ...p, consumptionKwh: e.target.value }))}
+                  placeholder="Ex: 500"
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="systemPowerKwp">Potência do sistema (kWp)</Label>
+                <Input
+                  id="systemPowerKwp"
+                  type="text"
+                  inputMode="decimal"
+                  value={form.systemPowerKwp}
+                  onChange={(e) => setForm((p) => ({ ...p, systemPowerKwp: e.target.value }))}
+                  placeholder="Ex: 5.4"
+                />
+              </div>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="systemPowerKwp">Potência do sistema (kWp)</Label>
-              <Input
-                id="systemPowerKwp"
-                type="text"
-                inputMode="decimal"
-                value={form.systemPowerKwp}
-                onChange={(e) => setForm((p) => ({ ...p, systemPowerKwp: e.target.value }))}
-                placeholder="Ex: 5.4"
-              />
+
+            <div className="rounded-lg border border-brand-navy-100 bg-brand-navy-50/30 p-4">
+              <p className="mb-3 text-sm font-medium text-brand-navy-700">Proposta solar (economia e payback)</p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-2">
+                  <Label htmlFor="monthlySavings">Economia mensal estimada (R$)</Label>
+                  <Input
+                    id="monthlySavings"
+                    type="text"
+                    inputMode="decimal"
+                    value={form.monthlySavings}
+                    onChange={(e) => setForm((p) => ({ ...p, monthlySavings: maskMoney(e.target.value) }))}
+                    placeholder="Ex: 350,00"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="paybackYears">Payback estimado (anos)</Label>
+                  <Input
+                    id="paybackYears"
+                    type="text"
+                    inputMode="decimal"
+                    value={form.paybackYears}
+                    onChange={(e) => setForm((p) => ({ ...p, paybackYears: e.target.value }))}
+                    placeholder="Ex: 5,5"
+                  />
+                </div>
+              </div>
+              <div className="mt-3 grid gap-2">
+                <Label htmlFor="paymentTerms">Condições de pagamento</Label>
+                <Input
+                  id="paymentTerms"
+                  value={form.paymentTerms}
+                  onChange={(e) => setForm((p) => ({ ...p, paymentTerms: e.target.value }))}
+                  placeholder="Ex: À vista, 12x, financiamento..."
+                />
+              </div>
             </div>
-          </div>
 
           <div className="border-t border-brand-navy-100 pt-4">
             <p className="mb-3 text-sm font-medium text-brand-navy-700">Custos (R$)</p>
@@ -429,8 +501,25 @@ export default function EditBudgetPage() {
           {status}
         </p>
       )}
-      <div className="flex gap-2">
+      <div className="flex flex-wrap gap-2">
         <Button type="submit">Salvar orçamento</Button>
+        <Button
+          type="button"
+          variant="outline"
+          onClick={handleGeneratePdf}
+          disabled={generatingPdf}
+        >
+          {generatingPdf ? "Gerando PDF..." : "Gerar PDF da proposta"}
+        </Button>
+        {proposalPdfUrl && (
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => window.open(proposalPdfUrl!, "_blank")}
+          >
+            Abrir PDF atual
+          </Button>
+        )}
         <Link href="/projects/budget">
           <Button type="button" variant="outline">
             Cancelar

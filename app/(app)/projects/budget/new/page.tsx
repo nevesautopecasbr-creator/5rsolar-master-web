@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -31,6 +31,7 @@ function formatMoney(n: number) {
 
 export default function NewBudgetPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [step, setStep] = useState(1);
   const [products, setProducts] = useState<Product[]>([]);
   const [projects, setProjects] = useState<Array<{ id: string; name: string }>>([]);
@@ -42,6 +43,13 @@ export default function NewBudgetPage() {
     consumptionKwh: "",
     consumerUnitCode: "",
     systemPowerKwp: "",
+    monthlySavings: "",
+    paybackYears: "",
+    paymentTerms: "",
+    fioBPct: "",
+    simultaneityFactor: "",
+    consumerGroup: "",
+    modality: "",
     laborCost: "0",
     materialCost: "0",
     taxAmount: "0",
@@ -50,6 +58,31 @@ export default function NewBudgetPage() {
   });
   const [budgetProducts, setBudgetProducts] = useState<BudgetProduct[]>([]);
   const [contextLoaded, setContextLoaded] = useState(false);
+
+  // Preencher a partir do simulador (query string)
+  useEffect(() => {
+    const q = searchParams.get("consumptionKwh");
+    const kwp = searchParams.get("suggestedPowerKwp");
+    const savings = searchParams.get("monthlySavings");
+    const payback = searchParams.get("paybackYears");
+    const fioB = searchParams.get("fioBPct");
+    const sim = searchParams.get("simultaneityFactor");
+    const group = searchParams.get("consumerGroup");
+    const mod = searchParams.get("modality");
+    if (q || kwp || savings || payback) {
+      setForm((p) => ({
+        ...p,
+        ...(q ? { consumptionKwh: q } : {}),
+        ...(kwp ? { systemPowerKwp: kwp } : {}),
+        ...(savings ? { monthlySavings: savings } : {}),
+        ...(payback ? { paybackYears: payback } : {}),
+        ...(fioB ? { fioBPct: fioB } : {}),
+        ...(sim ? { simultaneityFactor: sim } : {}),
+        ...(group ? { consumerGroup: group } : {}),
+        ...(mod ? { modality: mod } : {}),
+      }));
+    }
+  }, [searchParams]);
 
   const loadContext = useCallback(async (projectId: string) => {
     if (!projectId) {
@@ -150,6 +183,13 @@ export default function NewBudgetPage() {
       consumptionKwh: form.consumptionKwh ? Number(form.consumptionKwh.replace(",", ".")) : undefined,
       consumerUnitCode: form.consumerUnitCode.trim() || undefined,
       systemPowerKwp: form.systemPowerKwp ? Number(form.systemPowerKwp.replace(",", ".")) : undefined,
+      monthlySavings: form.monthlySavings ? parseMoney(form.monthlySavings) : undefined,
+      paybackYears: form.paybackYears ? Number(form.paybackYears.replace(",", ".")) : undefined,
+      paymentTerms: form.paymentTerms.trim() || undefined,
+      fioBPct: form.fioBPct ? Number(form.fioBPct.replace(",", ".")) : undefined,
+      simultaneityFactor: form.simultaneityFactor ? Number(form.simultaneityFactor.replace(",", ".")) : undefined,
+      consumerGroup: form.consumerGroup.trim() || undefined,
+      modality: form.modality.trim() || undefined,
       laborCost: labor,
       materialCost: material,
       taxAmount: tax,
@@ -295,6 +335,46 @@ export default function NewBudgetPage() {
                   placeholder="Ex: 5.4"
                 />
               </div>
+            </div>
+
+            <div className="rounded-lg border border-brand-navy-100 bg-brand-navy-50/30 p-4">
+              <p className="mb-3 text-sm font-medium text-brand-navy-700">Proposta solar (economia e payback)</p>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-2">
+                  <Label htmlFor="monthlySavings">Economia mensal estimada (R$)</Label>
+                  <Input
+                    id="monthlySavings"
+                    type="text"
+                    inputMode="decimal"
+                    value={form.monthlySavings}
+                    onChange={(e) => setForm((p) => ({ ...p, monthlySavings: maskMoney(e.target.value) }))}
+                    placeholder="Ex: 350,00"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="paybackYears">Payback estimado (anos)</Label>
+                  <Input
+                    id="paybackYears"
+                    type="text"
+                    inputMode="decimal"
+                    value={form.paybackYears}
+                    onChange={(e) => setForm((p) => ({ ...p, paybackYears: e.target.value }))}
+                    placeholder="Ex: 5,5"
+                  />
+                </div>
+              </div>
+              <div className="mt-3 grid gap-2">
+                <Label htmlFor="paymentTerms">Condições de pagamento</Label>
+                <Input
+                  id="paymentTerms"
+                  value={form.paymentTerms}
+                  onChange={(e) => setForm((p) => ({ ...p, paymentTerms: e.target.value }))}
+                  placeholder="Ex: À vista, 12x, financiamento..."
+                />
+              </div>
+              <p className="mt-2 text-xs text-brand-navy-500">
+                Use o <Link href="/projects/simulator" className="underline">Simulador Solar</Link> para preencher economia e payback com base no consumo e Lei 14.300.
+              </p>
             </div>
 
             <div className="border-t border-brand-navy-100 pt-4">
@@ -478,6 +558,20 @@ export default function NewBudgetPage() {
                   <dt className="text-brand-navy-500">Potência (kWp)</dt>
                   <dd className="font-medium">{form.systemPowerKwp || "—"}</dd>
                 </div>
+                <div>
+                  <dt className="text-brand-navy-500">Economia mensal (R$)</dt>
+                  <dd className="font-medium">{form.monthlySavings ? `R$ ${form.monthlySavings}` : "—"}</dd>
+                </div>
+                <div>
+                  <dt className="text-brand-navy-500">Payback (anos)</dt>
+                  <dd className="font-medium">{form.paybackYears || "—"}</dd>
+                </div>
+                {form.paymentTerms && (
+                  <div className="sm:col-span-2">
+                    <dt className="text-brand-navy-500">Condições de pagamento</dt>
+                    <dd className="font-medium">{form.paymentTerms}</dd>
+                  </div>
+                )}
                 <div>
                   <dt className="text-brand-navy-500">Subtotal produtos</dt>
                   <dd className="font-medium">R$ {formatMoney(productsSubtotal)}</dd>

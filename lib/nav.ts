@@ -31,6 +31,7 @@ export const navSections: NavSection[] = [
   {
     title: "Operações",
     items: [
+      { label: "Simulador Solar", href: "/projects/simulator" },
       { label: "Orçamentos", href: "/projects/budget" },
       { label: "Projetos", href: "/projects" },
       { label: "Contratos", href: "/contracts" },
