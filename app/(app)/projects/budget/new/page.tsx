@@ -127,7 +127,7 @@ export default function NewBudgetPage() {
             ? { ...p, productId: product.id, name: product.name, price: product.price ?? 0 }
             : { ...p, productId: String(value) };
         }
-        if (field === "quantity") return { ...p, quantity: Number(value) || 0 };
+        if (field === "quantity") return { ...p, quantity: Math.max(1, Math.floor(Number(value) || 0)) };
         if (field === "price") return { ...p, price: Number(value) || 0 };
         return { ...p, [field]: value } as BudgetProduct;
       }),
@@ -407,8 +407,10 @@ export default function NewBudgetPage() {
                   <Label>Qtd</Label>
                   <Input
                     type="number"
-                    min={0.01}
+                    min={1}
                     step={1}
+                    inputMode="numeric"
+                    pattern="[0-9]*"
                     value={bp.quantity}
                     onChange={(e) => updateProduct(idx, "quantity", e.target.value)}
                   />

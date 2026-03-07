@@ -18,13 +18,14 @@ export default function Page() {
       row.totalValue != null
         ? Number(row.totalValue).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
         : "—",
+    "Criar projeto": `/projects/new?budgetId=${String(row.id ?? "")}`,
     Editar: `/projects/budget/${String(row.id ?? "")}/edit`,
   });
 
   return (
     <DataPage
       title="Orçamentos"
-      description="Propostas comerciais com consumo, UC, potência e valores. Vincule a um projeto para herdar dados do cliente."
+      description="Propostas comerciais com consumo, UC, potência e valores. Crie um projeto a partir de um orçamento."
       newHref="/projects/budget/new"
       endpoint="/api/project-budgets"
       columns={[
@@ -33,6 +34,7 @@ export default function Page() {
         { key: "UC", label: "UC" },
         { key: "Potência (kWp)", label: "Potência (kWp)" },
         { key: "Valor total", label: "Valor total" },
+        { key: "Criar projeto", label: "Criar projeto" },
         { key: "Editar", label: "Editar" },
       ]}
       mapRow={mapRow}

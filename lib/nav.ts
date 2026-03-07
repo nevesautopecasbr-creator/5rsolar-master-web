@@ -31,8 +31,8 @@ export const navSections: NavSection[] = [
   {
     title: "Operações",
     items: [
-      { label: "Projetos", href: "/projects" },
       { label: "Orçamentos", href: "/projects/budget" },
+      { label: "Projetos", href: "/projects" },
       { label: "Contratos", href: "/contracts" },
       { label: "Solicitações", href: "/purchases/requests" },
       { label: "Pedidos", href: "/purchases/orders" },
