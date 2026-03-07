@@ -8,6 +8,7 @@ type DataPageProps = {
   title: string;
   description: string;
   newHref: string;
+  newLabel?: string;
   endpoint: string;
   columns: Array<{ key: string; label: string }>;
   mapRow: (row: Record<string, unknown>) => Record<string, string>;
@@ -17,6 +18,7 @@ export function DataPage({
   title,
   description,
   newHref,
+  newLabel,
   endpoint,
   columns,
   mapRow,
@@ -43,6 +45,7 @@ export function DataPage({
       title={title}
       description={description}
       newHref={newHref}
+      newLabel={newLabel}
       columns={columns}
       rows={rows}
     />
