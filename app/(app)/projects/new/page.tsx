@@ -9,7 +9,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api";
 
-type Customer = { id: string; name: string };
+type Customer = {
+  id: string;
+  name: string;
+  address?: string | null;
+  city?: string | null;
+  state?: string | null;
+  zipCode?: string | null;
+};
 type Budget = {
   id: string;
   customerName?: string | null;
@@ -18,6 +25,7 @@ type Budget = {
   systemPowerKwp?: unknown;
   totalValue?: unknown;
   projectId?: string | null;
+  project?: { customerId?: string | null; customer?: Customer | null } | null;
 };
 
 function NewProjectForm() {
@@ -54,15 +62,30 @@ function NewProjectForm() {
       .then(([budgetData, customersData]) => {
         if (!mounted) return;
         setBudget(budgetData);
-        setCustomers(Array.isArray(customersData) ? customersData : []);
+        const customerList = Array.isArray(customersData) ? customersData : [];
+        setCustomers(customerList as Customer[]);
         const b = budgetData as Budget;
+        const budgetCustomerName = b.customerName?.trim() ?? "";
+        let customer: Customer | undefined;
+        if (b.project?.customer) {
+          customer = b.project.customer as Customer;
+        } else if (budgetCustomerName && customerList.length > 0) {
+          customer = (customerList as Customer[]).find(
+            (c) => c.name?.trim().toLowerCase() === budgetCustomerName.toLowerCase()
+          );
+        }
         setForm((prev) => ({
           ...prev,
-          name: b.customerName?.trim() || prev.name,
+          name: budgetCustomerName || prev.name,
           kWp:
             b.systemPowerKwp != null && b.systemPowerKwp !== ""
               ? String(b.systemPowerKwp)
               : prev.kWp,
+          customerId: customer?.id ?? prev.customerId,
+          address: customer?.address?.trim() ?? prev.address,
+          city: customer?.city?.trim() ?? prev.city,
+          state: customer?.state?.trim() ?? prev.state,
+          zipCode: customer?.zipCode?.trim() ?? prev.zipCode,
         }));
       })
       .catch(() => setStatus("Falha ao carregar orçamento"))
@@ -140,7 +163,7 @@ function NewProjectForm() {
       <div>
         <h1 className="text-xl font-semibold text-brand-navy-900">Novo projeto a partir do orçamento</h1>
         <p className="mt-1 text-sm text-brand-navy-600">
-          Dados do orçamento foram usados para preencher o formulário. Ajuste se necessário.
+          Nome, potência e dados do cliente (incluindo endereço) foram preenchidos a partir do orçamento e do cadastro do cliente. Ajuste se necessário.
         </p>
       </div>
 
@@ -165,7 +188,18 @@ function NewProjectForm() {
               id="customerId"
               className="flex h-10 w-full rounded-md border border-brand-navy-300 bg-white px-3 py-2 text-sm"
               value={form.customerId}
-              onChange={(e) => setForm((p) => ({ ...p, customerId: e.target.value }))}
+              onChange={(e) => {
+                const id = e.target.value;
+                const customer = customers.find((c) => c.id === id);
+                setForm((p) => ({
+                  ...p,
+                  customerId: id,
+                  address: customer?.address?.trim() ?? "",
+                  city: customer?.city?.trim() ?? "",
+                  state: customer?.state?.trim() ?? "",
+                  zipCode: customer?.zipCode?.trim() ?? "",
+                }));
+              }}
             >
               <option value="">Nenhum</option>
               {customers.map((c) => (
@@ -174,6 +208,9 @@ function NewProjectForm() {
                 </option>
               ))}
             </select>
+            <p className="text-xs text-brand-navy-500">
+              Endereço, cidade, estado e CEP são preenchidos automaticamente pelo cadastro do cliente.
+            </p>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="code">Código</Label>
