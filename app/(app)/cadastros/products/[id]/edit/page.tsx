@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -9,8 +9,11 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api";
 
-export default function NewProductPage() {
+export default function EditProductPage() {
+  const params = useParams();
   const router = useRouter();
+  const id = params.id as string;
+  const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<string | null>(null);
   const [form, setForm] = useState({
     name: "",
@@ -20,6 +23,30 @@ export default function NewProductPage() {
     price: "",
     isActive: true,
   });
+
+  useEffect(() => {
+    let mounted = true;
+    apiFetch(`/api/products/${id}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (!mounted) return;
+        setForm({
+          name: data.name ?? "",
+          sku: data.sku ?? "",
+          unit: data.unit ?? "",
+          cost: data.cost != null ? String(data.cost) : "",
+          price: data.price != null ? String(data.price) : "",
+          isActive: data.isActive ?? true,
+        });
+      })
+      .catch(() => setStatus("Falha ao carregar produto"))
+      .finally(() => {
+        if (mounted) setLoading(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, [id]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -33,27 +60,31 @@ export default function NewProductPage() {
       isActive: form.isActive,
     };
 
-    const response = await apiFetch("/api/products", {
-      method: "POST",
+    const response = await apiFetch(`/api/products/${id}`, {
+      method: "PATCH",
       body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
       const msg = err?.message ?? response.statusText;
-      setStatus("Falha ao salvar: " + msg);
+      setStatus(`Falha ao salvar: ${msg}`);
       return;
     }
 
     router.push("/cadastros/products");
   }
 
+  if (loading) {
+    return <div className="text-sm text-brand-navy-600">Carregando...</div>;
+  }
+
   return (
     <form onSubmit={handleSubmit} className="grid gap-6">
       <div>
-        <h1 className="text-lg font-semibold">Novo Produto</h1>
+        <h1 className="text-lg font-semibold">Editar Produto</h1>
         <p className="text-sm text-brand-navy-600">
-          Cadastre o produto. Ele poderá ser adicionado aos orçamentos com quantidade e valor.
+          Altere os dados do produto. O preço será usado ao adicionar em orçamentos.
         </p>
       </div>
 
@@ -121,13 +152,13 @@ export default function NewProductPage() {
                 setForm((p) => ({ ...p, isActive: e.target.checked }))
               }
             />
-            Produto ativo (disponível para orçamentos)
+            Produto ativo
           </label>
         </CardContent>
       </Card>
 
       {status && (
-        <p className={"text-sm " + (status.startsWith("Falha") ? "text-red-600" : "text-brand-navy-600")}>
+        <p className={`text-sm ${status.startsWith("Falha") ? "text-red-600" : "text-brand-navy-600"}`}>
           {status}
         </p>
       )}
