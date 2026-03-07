@@ -122,9 +122,10 @@ export default function EditBudgetPage() {
   function addProduct() {
     const first = products[0];
     if (!first) return;
+    const price = Number(first.price) || 0;
     setBudgetProducts((prev) => [
       ...prev,
-      { productId: first.id, name: first.name, price: first.price ?? 0, quantity: 1 },
+      { productId: first.id, name: first.name, price, quantity: 1 },
     ]);
   }
 
@@ -139,7 +140,7 @@ export default function EditBudgetPage() {
         if (field === "productId") {
           const product = products.find((x) => x.id === value);
           return product
-            ? { ...p, productId: product.id, name: product.name, price: product.price ?? 0 }
+            ? { ...p, productId: product.id, name: product.name, price: Number(product.price) || 0 }
             : { ...p, productId: String(value) };
         }
         if (field === "quantity") return { ...p, quantity: Math.max(1, Math.floor(Number(value) || 0)) };
@@ -444,7 +445,7 @@ export default function EditBudgetPage() {
                   )}
                   {products.map((p) => (
                     <option key={p.id} value={p.id}>
-                      {p.name} {p.price != null ? `(R$ ${formatMoney(p.price)})` : ""}
+                      {p.name} {p.price != null ? `(R$ ${formatMoney(Number(p.price))})` : ""}
                     </option>
                   ))}
                 </select>

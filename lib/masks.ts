@@ -66,10 +66,13 @@ export function maskMoney(value: string): string {
 
 /**
  * Converte valor numérico (ex: da API) para string mascarada para exibição.
+ * Aceita number, string ou Decimal (API/Prisma) e normaliza para número.
  */
-export function maskMoneyFromNumber(value: number | null | undefined): string {
-  if (value == null || Number.isNaN(value)) return "";
-  const fixed = value.toFixed(2);
+export function maskMoneyFromNumber(value: number | string | null | undefined): string {
+  if (value == null) return "";
+  const n = typeof value === "number" ? value : Number(value);
+  if (Number.isNaN(n)) return "";
+  const fixed = n.toFixed(2);
   const [intPart, decPart] = fixed.split(".");
   const formatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   return `${formatted},${decPart}`;
