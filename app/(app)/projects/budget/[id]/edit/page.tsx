@@ -124,17 +124,17 @@ export default function EditBudgetPage() {
 
   function updateProduct(idx: number, field: keyof BudgetProduct, value: string | number) {
     setBudgetProducts((prev) =>
-      prev.map((p, i) => {
+      prev.map((p, i): BudgetProduct => {
         if (i !== idx) return p;
         if (field === "productId") {
           const product = products.find((x) => x.id === value);
           return product
             ? { ...p, productId: product.id, name: product.name, price: product.price ?? 0 }
-            : { ...p, [field]: value };
+            : { ...p, productId: String(value) };
         }
         if (field === "quantity") return { ...p, quantity: Number(value) || 0 };
         if (field === "price") return { ...p, price: Number(value) || 0 };
-        return { ...p, [field]: value };
+        return { ...p, [field]: value } as BudgetProduct;
       }),
     );
   }
