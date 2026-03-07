@@ -11,12 +11,13 @@ export default function Page() {
       row.kWp != null
         ? Number(row.kWp).toLocaleString("pt-BR", { minimumFractionDigits: 0, maximumFractionDigits: 2 })
         : "—",
+    "Criar contrato": `/contracts/new?projectId=${String(row.id ?? "")}`,
   });
 
   return (
     <DataPage
       title="Projetos"
-      description="Projetos criados a partir de orçamentos. Para criar um novo projeto, use a opção «Criar projeto» na lista de Orçamentos."
+      description="Projetos criados a partir de orçamentos. Crie um contrato a partir de um projeto para preencher cliente, consumo, endereço e valores."
       newHref="/projects/budget"
       newLabel="Ver orçamentos (criar projeto)"
       endpoint="/api/projects"
@@ -25,6 +26,7 @@ export default function Page() {
         { key: "Código", label: "Código" },
         { key: "Status", label: "Status" },
         { key: "Potência (kWp)", label: "Potência (kWp)" },
+        { key: "Criar contrato", label: "Criar contrato" },
       ]}
       mapRow={mapRow}
     />
