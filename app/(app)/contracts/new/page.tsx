@@ -91,7 +91,7 @@ function NewContractForm() {
           setForm((p) => ({
             ...p,
             projectId: ctx.projectId,
-            customerId: ctx.customerId,
+            customerId: ctx.customerId ?? "",
             totalValue:
               ctx.suggestedTotalValue != null
                 ? maskMoneyFromNumber(ctx.suggestedTotalValue)
