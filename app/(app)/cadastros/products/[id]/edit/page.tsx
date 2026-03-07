@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api";
+import { maskMoney, maskMoneyFromNumber, parseMoney } from "@/lib/masks";
 
 export default function EditProductPage() {
   const params = useParams();
@@ -34,8 +35,8 @@ export default function EditProductPage() {
           name: data.name ?? "",
           sku: data.sku ?? "",
           unit: data.unit ?? "",
-          cost: data.cost != null ? String(data.cost) : "",
-          price: data.price != null ? String(data.price) : "",
+          cost: data.cost != null ? maskMoneyFromNumber(Number(data.cost)) : "",
+          price: data.price != null ? maskMoneyFromNumber(Number(data.price)) : "",
           isActive: data.isActive ?? true,
         });
       })
@@ -55,8 +56,8 @@ export default function EditProductPage() {
       name: form.name.trim(),
       sku: form.sku.trim() || undefined,
       unit: form.unit.trim() || undefined,
-      cost: form.cost ? Number(form.cost.replace(",", ".")) : undefined,
-      price: form.price ? Number(form.price.replace(",", ".")) : undefined,
+      cost: form.cost ? parseMoney(form.cost) : undefined,
+      price: form.price ? parseMoney(form.price) : undefined,
       isActive: form.isActive,
     };
 
@@ -128,7 +129,7 @@ export default function EditProductPage() {
               type="text"
               inputMode="decimal"
               value={form.cost}
-              onChange={(e) => setForm((p) => ({ ...p, cost: e.target.value }))}
+              onChange={(e) => setForm((p) => ({ ...p, cost: maskMoney(e.target.value) }))}
               placeholder="0,00"
             />
           </div>
@@ -139,7 +140,7 @@ export default function EditProductPage() {
               type="text"
               inputMode="decimal"
               value={form.price}
-              onChange={(e) => setForm((p) => ({ ...p, price: e.target.value }))}
+              onChange={(e) => setForm((p) => ({ ...p, price: maskMoney(e.target.value) }))}
               placeholder="0,00"
             />
           </div>

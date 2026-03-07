@@ -49,3 +49,38 @@ export function unmaskDocument(value: string): string {
 export function unmaskPhone(value: string): string {
   return value.replace(/\D/g, "");
 }
+
+/**
+ * Máscara de dinheiro em reais (R$).
+ * Valor exibido: 1.234,56 (ponto para milhar, vírgula para decimal).
+ * Aceita digitação e formata em tempo real.
+ */
+export function maskMoney(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 15);
+  if (digits.length === 0) return "";
+  const intPart = digits.slice(0, -2).replace(/^0+/, "") || "0";
+  const decPart = digits.slice(-2).padStart(2, "0");
+  const formatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return `${formatted},${decPart}`;
+}
+
+/**
+ * Converte valor numérico (ex: da API) para string mascarada para exibição.
+ */
+export function maskMoneyFromNumber(value: number | null | undefined): string {
+  if (value == null || Number.isNaN(value)) return "";
+  const fixed = value.toFixed(2);
+  const [intPart, decPart] = fixed.split(".");
+  const formatted = intPart.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  return `${formatted},${decPart}`;
+}
+
+/**
+ * Remove a máscara e retorna o número (para envio à API).
+ */
+export function parseMoney(value: string): number {
+  if (!value || !value.trim()) return 0;
+  const normalized = value.replace(/\./g, "").replace(",", ".");
+  const n = Number(normalized);
+  return Number.isNaN(n) ? 0 : n;
+}

@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api";
+import { maskMoney, maskMoneyFromNumber, parseMoney } from "@/lib/masks";
 
 type Product = { id: string; name: string; price?: number | null; unit?: string | null };
 type BudgetProduct = { productId: string; name: string; price: number; quantity: number };
@@ -61,10 +62,10 @@ export default function EditBudgetPage() {
           consumptionKwh: budget.consumptionKwh != null ? String(budget.consumptionKwh) : "",
           consumerUnitCode: budget.consumerUnitCode ?? "",
           systemPowerKwp: budget.systemPowerKwp != null ? String(budget.systemPowerKwp) : "",
-          laborCost: budget.laborCost != null ? String(budget.laborCost) : "0",
-          materialCost: budget.materialCost != null ? String(budget.materialCost) : "0",
-          taxAmount: budget.taxAmount != null ? String(budget.taxAmount) : "0",
-          otherCosts: budget.otherCosts != null ? String(budget.otherCosts) : "0",
+          laborCost: budget.laborCost != null ? maskMoneyFromNumber(Number(budget.laborCost)) : "0,00",
+          materialCost: budget.materialCost != null ? maskMoneyFromNumber(Number(budget.materialCost)) : "0,00",
+          taxAmount: budget.taxAmount != null ? maskMoneyFromNumber(Number(budget.taxAmount)) : "0,00",
+          otherCosts: budget.otherCosts != null ? maskMoneyFromNumber(Number(budget.otherCosts)) : "0,00",
           notes: budget.notes ?? "",
         });
         const used = budget.productsUsed;
@@ -139,10 +140,10 @@ export default function EditBudgetPage() {
     );
   }
 
-  const labor = Number(form.laborCost.replace(",", ".")) || 0;
-  const material = Number(form.materialCost.replace(",", ".")) || 0;
-  const tax = Number(form.taxAmount.replace(",", ".")) || 0;
-  const other = Number(form.otherCosts.replace(",", ".")) || 0;
+  const labor = parseMoney(form.laborCost);
+  const material = parseMoney(form.materialCost);
+  const tax = parseMoney(form.taxAmount);
+  const other = parseMoney(form.otherCosts);
   const productsSubtotal = budgetProducts.reduce((s, p) => s + p.price * p.quantity, 0);
   const totalValue = productsSubtotal + labor + material + tax + other;
 
@@ -277,47 +278,47 @@ export default function EditBudgetPage() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="laborCost">Mão de obra</Label>
-                <Input
-                  id="laborCost"
-                  type="text"
-                  inputMode="decimal"
-                  value={form.laborCost}
-                  onChange={(e) => setForm((p) => ({ ...p, laborCost: e.target.value }))}
-                  placeholder="0,00"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="materialCost">Material</Label>
-                <Input
-                  id="materialCost"
-                  type="text"
-                  inputMode="decimal"
-                  value={form.materialCost}
-                  onChange={(e) => setForm((p) => ({ ...p, materialCost: e.target.value }))}
-                  placeholder="0,00"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="taxAmount">Impostos</Label>
-                <Input
-                  id="taxAmount"
-                  type="text"
-                  inputMode="decimal"
-                  value={form.taxAmount}
-                  onChange={(e) => setForm((p) => ({ ...p, taxAmount: e.target.value }))}
-                  placeholder="0,00"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="otherCosts">Outros</Label>
-                <Input
-                  id="otherCosts"
-                  type="text"
-                  inputMode="decimal"
-                  value={form.otherCosts}
-                  onChange={(e) => setForm((p) => ({ ...p, otherCosts: e.target.value }))}
-                  placeholder="0,00"
-                />
+                  <Input
+                    id="laborCost"
+                    type="text"
+                    inputMode="decimal"
+                    value={form.laborCost}
+                    onChange={(e) => setForm((p) => ({ ...p, laborCost: maskMoney(e.target.value) }))}
+                    placeholder="0,00"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="materialCost">Material</Label>
+                  <Input
+                    id="materialCost"
+                    type="text"
+                    inputMode="decimal"
+                    value={form.materialCost}
+                    onChange={(e) => setForm((p) => ({ ...p, materialCost: maskMoney(e.target.value) }))}
+                    placeholder="0,00"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="taxAmount">Impostos</Label>
+                  <Input
+                    id="taxAmount"
+                    type="text"
+                    inputMode="decimal"
+                    value={form.taxAmount}
+                    onChange={(e) => setForm((p) => ({ ...p, taxAmount: maskMoney(e.target.value) }))}
+                    placeholder="0,00"
+                  />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="otherCosts">Outros</Label>
+                  <Input
+                    id="otherCosts"
+                    type="text"
+                    inputMode="decimal"
+                    value={form.otherCosts}
+                    onChange={(e) => setForm((p) => ({ ...p, otherCosts: maskMoney(e.target.value) }))}
+                    placeholder="0,00"
+                  />
               </div>
             </div>
           </div>
@@ -391,8 +392,8 @@ export default function EditBudgetPage() {
                 <Input
                   type="text"
                   inputMode="decimal"
-                  value={bp.price}
-                  onChange={(e) => updateProduct(idx, "price", e.target.value)}
+                  value={maskMoneyFromNumber(bp.price)}
+                  onChange={(e) => updateProduct(idx, "price", parseMoney(e.target.value))}
                 />
               </div>
               <div className="flex items-end text-sm font-medium text-brand-navy-700">

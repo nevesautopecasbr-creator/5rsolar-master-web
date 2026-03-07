@@ -9,6 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api";
 import { maskCpfCnpj, maskPhone, maskCep } from "@/lib/masks";
+import {
+  fetchEstados,
+  fetchMunicipiosByEstadoId,
+  getEstadoIdBySigla,
+  type Estado,
+  type Municipio,
+} from "@/lib/br-locations";
 
 type ConsumerUnit = { id?: string; consumerUnitCode: string; currentConsumptionKwh: string };
 
@@ -18,6 +25,8 @@ export default function EditCustomerPage() {
   const id = params.id as string;
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<string | null>(null);
+  const [estados, setEstados] = useState<Estado[]>([]);
+  const [municipios, setMunicipios] = useState<Municipio[]>([]);
   const [form, setForm] = useState({
     name: "",
     document: "",
@@ -31,6 +40,16 @@ export default function EditCustomerPage() {
   const [consumerUnits, setConsumerUnits] = useState<ConsumerUnit[]>([
     { consumerUnitCode: "", currentConsumptionKwh: "" },
   ]);
+
+  useEffect(() => {
+    let mounted = true;
+    fetchEstados().then((list) => {
+      if (mounted) setEstados(list);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -73,6 +92,25 @@ export default function EditCustomerPage() {
       mounted = false;
     };
   }, [id]);
+
+  useEffect(() => {
+    if (!form.state.trim()) {
+      setMunicipios([]);
+      return;
+    }
+    const estadoId = getEstadoIdBySigla(estados, form.state);
+    if (estadoId == null) {
+      setMunicipios([]);
+      return;
+    }
+    let mounted = true;
+    fetchMunicipiosByEstadoId(estadoId).then((list) => {
+      if (mounted) setMunicipios(list);
+    });
+    return () => {
+      mounted = false;
+    };
+  }, [form.state, estados]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -198,23 +236,39 @@ export default function EditCustomerPage() {
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="city">Cidade</Label>
-            <Input
-              id="city"
-              value={form.city}
-              onChange={(e) => setForm((p) => ({ ...p, city: e.target.value }))}
-              placeholder="Cidade"
-            />
+            <Label htmlFor="state">Estado</Label>
+            <select
+              id="state"
+              className="flex h-10 w-full rounded-md border border-brand-navy-300 bg-white px-3 py-2 text-sm"
+              value={form.state}
+              onChange={(e) =>
+                setForm((p) => ({ ...p, state: e.target.value, city: "" }))
+              }
+            >
+              <option value="">Selecione o estado</option>
+              {estados.map((e) => (
+                <option key={e.id} value={e.sigla}>
+                  {e.nome} ({e.sigla})
+                </option>
+              ))}
+            </select>
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="state">UF</Label>
-            <Input
-              id="state"
-              value={form.state}
-              onChange={(e) => setForm((p) => ({ ...p, state: e.target.value }))}
-              placeholder="UF"
-              maxLength={2}
-            />
+            <Label htmlFor="city">Cidade</Label>
+            <select
+              id="city"
+              className="flex h-10 w-full rounded-md border border-brand-navy-300 bg-white px-3 py-2 text-sm"
+              value={form.city}
+              onChange={(e) => setForm((p) => ({ ...p, city: e.target.value }))}
+              disabled={!form.state || municipios.length === 0}
+            >
+              <option value="">Selecione a cidade</option>
+              {municipios.map((m) => (
+                <option key={m.id} value={m.nome}>
+                  {m.nome}
+                </option>
+              ))}
+            </select>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="zipCode">CEP</Label>
