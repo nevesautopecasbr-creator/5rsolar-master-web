@@ -27,6 +27,7 @@ export default function Page() {
       title="Orçamentos"
       description="Propostas comerciais com consumo, UC, potência e valores. Crie um projeto a partir de um orçamento."
       newHref="/projects/budget/new"
+      searchPlaceholder="Pesquisar orçamentos..."
       endpoint="/api/project-budgets"
       columns={[
         { key: "Cliente", label: "Cliente" },

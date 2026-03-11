@@ -5,9 +5,26 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { navSections } from "@/lib/nav";
 import { useMenu } from "@/components/app-shell";
-import { Logo } from "@/components/logo";
 import { COMPANY_NAME_KEY, COMPANY_CONTEXT_UPDATED } from "@/lib/session";
-import { IconChevronDown, IconChevronRight, IconSolarRays } from "@/components/icons/solar-icons";
+import {
+  IconChevronDown,
+  IconChevronRight,
+  IconSolarRays,
+  IconHome,
+  IconDocument,
+  IconChart,
+  IconDollar,
+  IconTarget,
+  IconUsers,
+} from "@/components/icons/solar-icons";
+
+const sectionIcons: Record<string, React.ComponentType<{ className?: string }>> = {
+  Geral: IconHome,
+  "Cadastros e Acesso": IconUsers,
+  Operações: IconDocument,
+  "Financeiro e Precificação": IconDollar,
+  "Pós-venda": IconTarget,
+};
 
 export function Sidebar() {
   const { menuOpen } = useMenu();
@@ -39,71 +56,79 @@ export function Sidebar() {
 
   return (
     <aside
-      className="fixed inset-y-0 left-0 z-40 flex h-full w-72 flex-col border-r border-brand-navy-200/80 bg-white shadow-lg lg:relative lg:z-auto lg:w-64 lg:flex-shrink-0 lg:shadow-sm xl:w-72"
+      className="fixed inset-y-0 left-0 z-40 flex h-full w-72 flex-col bg-brand-navy-800 shadow-xl lg:relative lg:z-auto lg:w-64 lg:flex-shrink-0 xl:w-72"
       aria-label="Menu principal"
     >
-      {/* Nome da empresa no topo do menu */}
+      {/* Barra superior laranja 5R com logo */}
+      <div className="flex shrink-0 items-center gap-2 bg-brand-orange px-5 py-4">
+        <IconSolarRays className="h-8 w-8 text-white" />
+        <span className="text-lg font-bold uppercase tracking-tight text-white">
+          5R
+        </span>
+      </div>
+
+      {/* Nome da empresa (opcional) */}
       {companyName ? (
-        <div className="border-b border-brand-navy-100 bg-brand-navy-50/50 px-4 py-3">
-          <p className="truncate text-sm font-semibold text-brand-navy-800" title={companyName}>
+        <div className="border-b border-brand-navy-600/60 px-4 py-2.5">
+          <p className="truncate text-xs font-medium text-brand-navy-200" title={companyName}>
             {companyName}
           </p>
         </div>
       ) : null}
-      {/* Logo 5R */}
-      <div className="border-b border-brand-navy-100 px-5 py-5">
-        <Logo href="/" variant="compact" />
-      </div>
 
-      <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4 text-sm">
-        {navSections.map((section) => (
-          <div key={section.title} className="space-y-1">
-            <button
-              type="button"
-              onClick={() =>
-                setSectionOpen((prev) => ({
-                  ...prev,
-                  [section.title]: !prev[section.title],
-                }))
-              }
-              className="flex w-full items-center justify-between rounded-lg px-3 py-2 text-xs font-semibold uppercase tracking-wider text-brand-navy-500 transition-colors hover:bg-brand-orange-50 hover:text-brand-navy-700"
-            >
-              <span className="flex items-center gap-2">
-                <IconSolarRays className="h-4 w-4 text-brand-orange" />
-                {section.title}
-              </span>
-              <span className="text-brand-navy-400">
-                {sectionOpen[section.title] ? (
-                  <IconChevronDown className="h-4 w-4" />
-                ) : (
-                  <IconChevronRight className="h-4 w-4" />
-                )}
-              </span>
-            </button>
-            {sectionOpen[section.title] ? (
-              <div className="flex flex-col gap-0.5 pl-2">
-                {section.items.map((item) => {
-                  const isActive =
-                    pathname === item.href ||
-                    (item.href !== "/" && pathname.startsWith(`${item.href}/`));
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={`rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
-                        isActive
-                          ? "bg-brand-orange/10 text-brand-orange font-semibold"
-                          : "text-brand-navy-600 hover:bg-brand-navy-50 hover:text-brand-navy-800"
-                      }`}
-                    >
-                      {item.label}
-                    </Link>
-                  );
-                })}
-              </div>
-            ) : null}
-          </div>
-        ))}
+      {/* Navegação hierárquica */}
+      <nav className="flex-1 space-y-0.5 overflow-y-auto px-3 py-4 text-sm">
+        {navSections.map((section) => {
+          const SectionIcon = sectionIcons[section.title] ?? IconChart;
+          return (
+            <div key={section.title} className="space-y-0.5">
+              <button
+                type="button"
+                onClick={() =>
+                  setSectionOpen((prev) => ({
+                    ...prev,
+                    [section.title]: !prev[section.title],
+                  }))
+                }
+                className="flex w-full items-center justify-between rounded-lg px-3 py-2.5 text-brand-navy-200 transition-colors hover:bg-brand-navy-700/80 hover:text-white"
+              >
+                <span className="flex items-center gap-2.5">
+                  <SectionIcon className="h-4 w-4 text-brand-navy-400" />
+                  <span className="font-medium">{section.title}</span>
+                </span>
+                <span className="text-brand-navy-500">
+                  {sectionOpen[section.title] ? (
+                    <IconChevronDown className="h-4 w-4" />
+                  ) : (
+                    <IconChevronRight className="h-4 w-4" />
+                  )}
+                </span>
+              </button>
+              {sectionOpen[section.title] ? (
+                <div className="flex flex-col gap-0.5 pl-2">
+                  {section.items.map((item) => {
+                    const isActive =
+                      pathname === item.href ||
+                      (item.href !== "/" && pathname.startsWith(`${item.href}/`));
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`flex items-center gap-2.5 rounded-lg border-l-2 px-3 py-2.5 font-medium transition-colors ${
+                          isActive
+                            ? "border-brand-orange bg-brand-navy-700/90 text-white"
+                            : "border-transparent text-brand-navy-300 hover:bg-brand-navy-700/60 hover:text-brand-navy-100"
+                        }`}
+                      >
+                        {item.label}
+                      </Link>
+                    );
+                  })}
+                </div>
+              ) : null}
+            </div>
+          );
+        })}
       </nav>
     </aside>
   );

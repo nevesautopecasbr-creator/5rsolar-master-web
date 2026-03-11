@@ -3,13 +3,15 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
+import { IconSearch } from "@/components/icons/solar-icons";
 
 type DataTableProps = {
   title: string;
   description: string;
   newHref: string;
   newLabel?: string;
+  searchPlaceholder?: string;
   columns: Array<{ key: string; label: string }>;
   rows: Array<Record<string, string>>;
 };
@@ -19,6 +21,7 @@ export function DataTable({
   description,
   newHref,
   newLabel = "Novo",
+  searchPlaceholder,
   columns,
   rows,
 }: DataTableProps) {
@@ -26,17 +29,26 @@ export function DataTable({
   const [pageSize, setPageSize] = useState(10);
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
+  const [search, setSearch] = useState("");
+
+  const filteredRows = useMemo(() => {
+    if (!search.trim()) return rows;
+    const q = search.trim().toLowerCase();
+    return rows.filter((row) =>
+      Object.values(row).some((v) => String(v).toLowerCase().includes(q)),
+    );
+  }, [rows, search]);
 
   const sortedRows = useMemo(() => {
-    if (!sortKey) return rows;
-    return [...rows].sort((a, b) => {
+    if (!sortKey) return filteredRows;
+    return [...filteredRows].sort((a, b) => {
       const aVal = a[sortKey] ?? "";
       const bVal = b[sortKey] ?? "";
       if (aVal === bVal) return 0;
       const result = aVal > bVal ? 1 : -1;
       return sortDir === "asc" ? result : -result;
     });
-  }, [rows, sortKey, sortDir]);
+  }, [filteredRows, sortKey, sortDir]);
 
   const totalPages = Math.max(1, Math.ceil(sortedRows.length / pageSize));
   const pageRows = sortedRows.slice((page - 1) * pageSize, page * pageSize);
@@ -51,19 +63,52 @@ export function DataTable({
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h1 className="text-display-md text-brand-navy-900">{title}</h1>
-          <p className="text-sm text-brand-navy-600">{description}</p>
+    <div className="space-y-4">
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight text-brand-navy-900 md:text-3xl">
+          {title}
+        </h1>
+        <p className="mt-1 text-sm text-brand-navy-500">{description}</p>
+      </div>
+
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href={newHref}>
+            <Button type="button" className="gap-1.5">
+              <span className="text-lg leading-none">+</span>
+              {newLabel}
+            </Button>
+          </Link>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => window.location.reload()}
+            className="gap-1.5"
+          >
+            Atualizar
+          </Button>
         </div>
-        <Link href={newHref} className="flex-shrink-0">
-          <Button type="button">{newLabel}</Button>
-        </Link>
-      </CardHeader>
-      <CardContent>
+        {searchPlaceholder !== undefined && (
+          <div className="relative w-full sm:w-64">
+            <IconSearch className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-brand-navy-400" />
+            <input
+              type="search"
+              placeholder={searchPlaceholder}
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setPage(1);
+              }}
+              className="h-10 w-full rounded-lg border border-brand-navy-200 bg-white pl-9 pr-3 text-sm text-brand-navy-800 placeholder:text-brand-navy-400 focus:border-brand-orange focus:outline-none focus:ring-1 focus:ring-brand-orange"
+            />
+          </div>
+        )}
+      </div>
+
+      <Card>
+        <CardContent className="pt-5">
         <div className="mb-4 flex flex-wrap items-center gap-4 text-sm text-brand-navy-600">
-          <span>Total: <strong className="text-brand-navy-800">{rows.length}</strong></span>
+          <span>Total: <strong className="text-brand-navy-800">{sortedRows.length}</strong></span>
           <label className="flex items-center gap-2">
             Itens por página
             <select
@@ -164,7 +209,8 @@ export function DataTable({
             </Button>
           </div>
         </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

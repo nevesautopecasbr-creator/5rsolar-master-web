@@ -24,7 +24,7 @@ function LayoutContent({ children }: { children: ReactNode }) {
       )}
       <div className="flex flex-1 flex-col min-w-0">
         <Topbar />
-        <main className="flex-1 overflow-y-auto overflow-x-hidden bg-brand-navy-50 p-4 md:p-6">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden bg-brand-navy-50/80 p-4 md:p-6">
           {children}
         </main>
       </div>
