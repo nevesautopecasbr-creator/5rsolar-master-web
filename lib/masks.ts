@@ -87,3 +87,24 @@ export function parseMoney(value: string): number {
   const n = Number(normalized);
   return Number.isNaN(n) ? 0 : n;
 }
+
+/**
+ * Aceita apenas dígitos (números inteiros). Útil para quantidade, código, etc.
+ */
+export function maskOnlyNumbers(value: string, maxLength?: number): string {
+  const digits = value.replace(/\D/g, "");
+  return maxLength != null ? digits.slice(0, maxLength) : digits;
+}
+
+/**
+ * Aceita apenas números e um separador decimal (vírgula ou ponto). Útil para kWh, kWp, etc.
+ */
+export function maskDecimal(value: string, decimalPlaces = 2): string {
+  const normalized = value.replace(",", ".");
+  const match = normalized.match(/^(-?\d*)(\.?\d*)/);
+  if (!match) return value;
+  let [, intPart, decPart] = match;
+  if (decPart.length > decimalPlaces) decPart = decPart.slice(0, decimalPlaces);
+  if (decPart === ".") return intPart || "0";
+  return decPart ? `${intPart || "0"}.${decPart}` : intPart || "";
+}

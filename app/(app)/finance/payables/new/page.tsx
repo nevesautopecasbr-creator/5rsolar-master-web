@@ -8,9 +8,9 @@ export default function Page() {
       endpoint="/api/payables"
       onSuccessRedirect="/finance/payables"
       fields={[
-        { name: 'description', label: 'Descrição', type: 'text' },
-        { name: 'amount', label: 'Valor', type: 'number' },
-        { name: 'dueDate', label: 'Vencimento', type: 'date' },
+        { name: 'description', label: 'Descrição', type: 'text', required: true },
+        { name: 'amount', label: 'Valor (R$)', type: 'text', mask: 'money', required: true },
+        { name: 'dueDate', label: 'Vencimento', type: 'date', required: true },
         { name: 'projectId', label: 'Projeto', type: 'text', placeholder: 'ID do projeto' },
         { name: 'supplierId', label: 'Fornecedor', type: 'text', placeholder: 'ID do fornecedor' },
         { name: 'purchaseOrderId', label: 'Pedido', type: 'text', placeholder: 'ID do pedido' },

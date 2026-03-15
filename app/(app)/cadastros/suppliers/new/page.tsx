@@ -8,14 +8,14 @@ export default function Page() {
       endpoint="/api/suppliers"
       onSuccessRedirect="/cadastros/suppliers"
       fields={[
-        { name: 'name', label: 'Nome', type: 'text' },
-        { name: 'document', label: 'Documento', type: 'text' },
-        { name: 'email', label: 'Email', type: 'email' },
-        { name: 'phone', label: 'Telefone', type: 'text' },
+        { name: 'name', label: 'Nome', type: 'text', required: true },
+        { name: 'document', label: 'CPF/CNPJ', type: 'text', mask: 'cpfCnpj', required: true },
+        { name: 'email', label: 'E-mail', type: 'email' },
+        { name: 'phone', label: 'Telefone', type: 'text', mask: 'phone' },
         { name: 'address', label: 'Endereço', type: 'text' },
         { name: 'city', label: 'Cidade', type: 'text' },
-        { name: 'state', label: 'UF', type: 'text' },
-        { name: 'zipCode', label: 'CEP', type: 'text' },
+        { name: 'state', label: 'UF', type: 'text', placeholder: 'Ex: SP' },
+        { name: 'zipCode', label: 'CEP', type: 'text', mask: 'cep' },
       ]}
     />
   );

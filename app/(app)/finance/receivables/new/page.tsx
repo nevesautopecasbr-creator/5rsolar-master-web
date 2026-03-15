@@ -8,9 +8,9 @@ export default function Page() {
       endpoint="/api/receivables"
       onSuccessRedirect="/finance/receivables"
       fields={[
-        { name: 'description', label: 'Descrição', type: 'text' },
-        { name: 'amount', label: 'Valor', type: 'number' },
-        { name: 'dueDate', label: 'Vencimento', type: 'date' },
+        { name: 'description', label: 'Descrição', type: 'text', required: true },
+        { name: 'amount', label: 'Valor (R$)', type: 'text', mask: 'money', required: true },
+        { name: 'dueDate', label: 'Vencimento', type: 'date', required: true },
         { name: 'projectId', label: 'Projeto', type: 'text', placeholder: 'ID do projeto' },
         { name: 'customerId', label: 'Cliente', type: 'text', placeholder: 'ID do cliente' },
         { name: 'contractId', label: 'Contrato', type: 'text', placeholder: 'ID do contrato' },
@@ -18,8 +18,8 @@ export default function Page() {
         { name: 'status', label: 'Status', type: 'text', placeholder: 'OPEN, RECEIVED...' },
         { name: 'paymentMethod', label: 'Forma de pagamento', type: 'text' },
         { name: 'receivedAt', label: 'Recebido em', type: 'date' },
-        { name: 'installmentNo', label: 'Parcela', type: 'number' },
-        { name: 'totalInstallments', label: 'Total parcelas', type: 'number' },
+        { name: 'installmentNo', label: 'Parcela', type: 'text', mask: 'number' },
+        { name: 'totalInstallments', label: 'Total parcelas', type: 'text', mask: 'number' },
       ]}
     />
   );

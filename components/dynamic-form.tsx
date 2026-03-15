@@ -6,6 +6,18 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api";
+import {
+  maskCpfCnpj,
+  maskPhone,
+  maskCep,
+  maskMoney,
+  maskOnlyNumbers,
+  parseMoney,
+  unmaskDocument,
+  unmaskPhone,
+} from "@/lib/masks";
+
+export type FormFieldMask = "cpfCnpj" | "phone" | "cep" | "money" | "number" | "decimal";
 
 export type FormField = {
   name: string;
@@ -13,6 +25,10 @@ export type FormField = {
   type?: string;
   placeholder?: string;
   defaultValue?: string | boolean;
+  /** Campo obrigatório para validação e habilitação do botão Salvar */
+  required?: boolean;
+  /** Máscara: cpfCnpj, phone, cep, money, number (apenas dígitos), decimal */
+  mask?: FormFieldMask;
   /** Para type "select": URL para buscar opções (ex: /api/roles) */
   optionsUrl?: string;
   optionValueKey?: string;
@@ -26,6 +42,10 @@ type DynamicFormProps = {
   method?: "POST" | "GET";
   fields: FormField[];
   onSuccessRedirect?: string;
+  /** Chamado após salvar com sucesso (ex: fechar modal e atualizar lista) */
+  onSuccess?: () => void;
+  /** Se true, não renderiza ModuleForm (útil dentro de Modal) */
+  inline?: boolean;
 };
 
 type ProductOption = {
@@ -41,6 +61,49 @@ type ProductSelection = {
   price: number | null;
 };
 
+function applyMask(value: string, mask?: FormFieldMask): string {
+  if (!mask) return value;
+  switch (mask) {
+    case "cpfCnpj":
+      return maskCpfCnpj(value);
+    case "phone":
+      return maskPhone(value);
+    case "cep":
+      return maskCep(value);
+    case "money":
+      return maskMoney(value);
+    case "number":
+      return maskOnlyNumbers(value);
+    case "decimal": {
+      const allowed = value.replace(/[^\d.,]/g, "");
+      const parts = allowed.split(/[.,]/);
+      if (parts.length <= 1) return allowed;
+      return parts[0] + "." + parts.slice(1).join("");
+    }
+    default:
+      return value;
+  }
+}
+
+function getPayloadValue(name: string, value: string | boolean | ProductSelection[], field: FormField): unknown {
+  if (field.type === "checkbox") return Boolean(value);
+  if (field.type === "products") return value;
+  const str = String(value ?? "").trim();
+  if (field.mask === "cpfCnpj") return unmaskDocument(str) || undefined;
+  if (field.mask === "phone") return unmaskPhone(str) || undefined;
+  if (field.mask === "cep") return str.replace(/\D/g, "") || undefined;
+  if (field.mask === "number") {
+    const num = str.replace(/\D/g, "");
+    return num ? Number(num) : undefined;
+  }
+  if (field.mask === "decimal") {
+    const n = Number(str.replace(",", "."));
+    return Number.isNaN(n) ? undefined : n;
+  }
+  if (field.mask === "money" || field.name === "amount" || field.name === "value" || field.name === "totalValue") return str ? parseMoney(str) : undefined;
+  return str || undefined;
+}
+
 export function DynamicForm({
   title,
   description,
@@ -48,6 +111,8 @@ export function DynamicForm({
   method = "POST",
   fields,
   onSuccessRedirect,
+  onSuccess,
+  inline = false,
 }: DynamicFormProps) {
   const initial = fields.reduce<Record<string, string | boolean | ProductSelection[]>>(
     (acc, field) => {
@@ -81,6 +146,17 @@ export function DynamicForm({
     () => fields.some((field) => field.type === "products"),
     [fields],
   );
+
+  const requiredFields = useMemo(() => fields.filter((f) => f.required), [fields]);
+
+  const allRequiredFilled = useMemo(() => {
+    return requiredFields.every((field) => {
+      const val = form[field.name];
+      if (field.type === "checkbox") return true;
+      if (field.type === "products") return Array.isArray(val) && val.length > 0;
+      return String(val ?? "").trim() !== "";
+    });
+  }, [form, requiredFields]);
 
   const selectFields = useMemo(
     () => fields.filter((f) => f.type === "select" && f.optionsUrl),
@@ -165,31 +241,34 @@ export function DynamicForm({
   async function handleSubmit() {
     setStatus(null);
     const isGet = method === "GET";
-    const params = new URLSearchParams(
-      Object.entries(form).reduce<Record<string, string>>((acc, [key, value]) => {
-        acc[key] = String(value ?? "");
-        return acc;
-      }, {}),
-    );
-    const url = isGet
-      ? `${endpoint}?${params.toString()}`
-      : endpoint;
+    const payload: Record<string, unknown> = isGet
+      ? Object.fromEntries(
+          Object.entries(form).map(([key, value]) => [key, String(value ?? "")]),
+        ) as Record<string, unknown>
+      : fields.reduce<Record<string, unknown>>((acc, field) => {
+          const raw = (form as Record<string, string | boolean | ProductSelection[]>)[field.name];
+          acc[field.name] = getPayloadValue(field.name, raw, field);
+          return acc;
+        }, {} as Record<string, unknown>);
+    const params = isGet ? new URLSearchParams(payload as Record<string, string>) : undefined;
+    const url = isGet ? `${endpoint}?${params?.toString()}` : endpoint;
     const response = await apiFetch(url, {
       method,
-      ...(isGet ? {} : { body: JSON.stringify(form) }),
+      ...(isGet ? {} : { body: JSON.stringify(payload) }),
     });
     if (!response.ok) {
       setStatus("Falha ao salvar");
       return;
     }
     setStatus("Salvo com sucesso");
+    onSuccess?.();
     if (onSuccessRedirect) {
       window.location.href = onSuccessRedirect;
     }
   }
 
-  return (
-    <ModuleForm title={title} description={description}>
+  const content = (
+    <div className={inline ? "space-y-4" : "grid gap-6"}>
       {fields.map((field) => (
         <div key={field.name} className="grid gap-2">
           {field.type === "checkbox" ? (
@@ -310,12 +389,17 @@ export function DynamicForm({
                 </>
               ) : (
                 <Input
-                  type={field.type ?? "text"}
+                  type={field.mask === "money" || field.type === "number" ? "text" : (field.type ?? "text")}
+                  inputMode={field.mask === "money" || field.mask === "number" ? "numeric" : undefined}
                   placeholder={field.placeholder ?? field.label}
                   value={String(form[field.name] ?? "")}
-                  onChange={(event) =>
-                    setForm((prev) => ({ ...prev, [field.name]: event.target.value }))
-                  }
+                  onChange={(event) => {
+                    const raw = event.target.value;
+                    const next = field.mask ? applyMask(raw, field.mask) : raw;
+                    setForm((prev) => ({ ...prev, [field.name]: next }));
+                  }}
+                  required={field.required}
+                  className="max-w-md"
                 />
               )}
             </>
@@ -323,9 +407,19 @@ export function DynamicForm({
         </div>
       ))}
       {status ? <div className="text-sm text-brand-navy-600">{status}</div> : null}
-      <Button type="button" onClick={handleSubmit}>
+      <Button
+        type="button"
+        onClick={handleSubmit}
+        disabled={requiredFields.length > 0 && !allRequiredFilled}
+      >
         Salvar
       </Button>
+    </div>
+  );
+
+  return inline ? content : (
+    <ModuleForm title={title} description={description}>
+      {content}
     </ModuleForm>
   );
 }

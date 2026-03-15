@@ -11,6 +11,8 @@ type DataTableProps = {
   description: string;
   newHref: string;
   newLabel?: string;
+  /** Se definido, o botão "Novo" chama esta função em vez de navegar para newHref (abrir modal) */
+  onNewClick?: () => void;
   searchPlaceholder?: string;
   columns: Array<{ key: string; label: string }>;
   rows: Array<Record<string, string>>;
@@ -21,6 +23,7 @@ export function DataTable({
   description,
   newHref,
   newLabel = "Novo",
+  onNewClick,
   searchPlaceholder,
   columns,
   rows,
@@ -73,12 +76,19 @@ export function DataTable({
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-wrap items-center gap-2">
-          <Link href={newHref}>
-            <Button type="button" className="gap-1.5">
+          {onNewClick ? (
+            <Button type="button" className="gap-1.5" onClick={onNewClick}>
               <span className="text-lg leading-none">+</span>
               {newLabel}
             </Button>
-          </Link>
+          ) : (
+            <Link href={newHref}>
+              <Button type="button" className="gap-1.5">
+                <span className="text-lg leading-none">+</span>
+                {newLabel}
+              </Button>
+            </Link>
+          )}
           <Button
             type="button"
             variant="outline"

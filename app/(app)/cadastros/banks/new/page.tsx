@@ -8,11 +8,11 @@ export default function Page() {
       endpoint="/api/banks"
       onSuccessRedirect="/cadastros/banks"
       fields={[
-        { name: 'name', label: 'Banco', type: 'text' },
-        { name: 'code', label: 'Código', type: 'text' },
-        { name: 'agency', label: 'Agência', type: 'text' },
-        { name: 'accountNumber', label: 'Conta', type: 'text' },
-        { name: 'accountType', label: 'Tipo de conta', type: 'text' },
+        { name: 'name', label: 'Banco', type: 'text', required: true },
+        { name: 'code', label: 'Código', type: 'text', mask: 'number', placeholder: 'Apenas números' },
+        { name: 'agency', label: 'Agência', type: 'text', mask: 'number' },
+        { name: 'accountNumber', label: 'Conta', type: 'text', mask: 'number' },
+        { name: 'accountType', label: 'Tipo de conta', type: 'text', placeholder: 'Ex: Corrente, Poupança' },
       ]}
     />
   );

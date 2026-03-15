@@ -3,11 +3,12 @@
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { maskMoney, maskMoneyFromNumber, parseMoney } from "@/lib/masks";
 
 export type EditableTableColumn<Row> = {
   key: keyof Row | string;
   label: string;
-  type?: "text" | "number" | "select" | "readonly";
+  type?: "text" | "number" | "money" | "select" | "readonly";
   options?: Array<{ label: string; value: string }>;
   align?: "left" | "center" | "right";
   render?: (row: Row, index: number) => ReactNode;
@@ -112,15 +113,43 @@ export function EditableTable<Row>({
                         </td>
                       );
                     }
+                    if (column.type === "money") {
+                      const displayValue =
+                        typeof value === "number"
+                          ? maskMoneyFromNumber(value)
+                          : value != null && value !== ""
+                            ? maskMoneyFromNumber(Number(value))
+                            : "";
+                      return (
+                        <td key={String(column.key)} className="px-3 py-2">
+                          <Input
+                            type="text"
+                            inputMode="decimal"
+                            value={displayValue}
+                            className={`h-9 max-w-[140px] ${alignClass(column.align)}`}
+                            onChange={(event) => {
+                              const masked = maskMoney(event.target.value);
+                              const num = parseMoney(masked);
+                              setValue(index, column.key, String(num));
+                            }}
+                          />
+                        </td>
+                      );
+                    }
+                    const isNumber = column.type === "number";
+                    const rawVal = String(value ?? "");
                     return (
                       <td key={String(column.key)} className="px-3 py-2">
                         <Input
-                          type={column.type === "number" ? "number" : "text"}
-                          value={String(value ?? "")}
-                          className={`h-9 ${alignClass(column.align)}`}
-                          onChange={(event) =>
-                            setValue(index, column.key, event.target.value)
-                          }
+                          type="text"
+                          inputMode={isNumber ? "numeric" : undefined}
+                          value={rawVal}
+                          className={`h-9 max-w-[120px] ${alignClass(column.align)}`}
+                          onChange={(event) => {
+                            const v = event.target.value;
+                            const next = isNumber ? v.replace(/\D/g, "") : v;
+                            setValue(index, column.key, next);
+                          }}
                           onBlur={(event) => {
                             if (!column.formatOnBlur) return;
                             const formatted = column.formatOnBlur(event.target.value);

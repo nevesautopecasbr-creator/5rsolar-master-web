@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api";
-import { maskMoney, maskMoneyFromNumber, parseMoney } from "@/lib/masks";
+import { maskMoney, maskMoneyFromNumber, parseMoney, maskDecimal } from "@/lib/masks";
 
 type Product = { id: string; name: string; price?: number | null; unit?: string | null };
 type BudgetProduct = { productId: string; name: string; price: number; quantity: number };
@@ -321,8 +321,11 @@ export default function NewBudgetPage() {
                   type="text"
                   inputMode="decimal"
                   value={form.consumptionKwh}
-                  onChange={(e) => setForm((p) => ({ ...p, consumptionKwh: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, consumptionKwh: maskDecimal(e.target.value, 2) }))
+                  }
                   placeholder="Ex: 500"
+                  className="max-w-[140px]"
                 />
               </div>
               <div className="grid gap-2">
@@ -332,8 +335,11 @@ export default function NewBudgetPage() {
                   type="text"
                   inputMode="decimal"
                   value={form.systemPowerKwp}
-                  onChange={(e) => setForm((p) => ({ ...p, systemPowerKwp: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, systemPowerKwp: maskDecimal(e.target.value, 2) }))
+                  }
                   placeholder="Ex: 5.4"
+                  className="max-w-[120px]"
                 />
               </div>
             </div>
@@ -359,8 +365,11 @@ export default function NewBudgetPage() {
                     type="text"
                     inputMode="decimal"
                     value={form.paybackYears}
-                    onChange={(e) => setForm((p) => ({ ...p, paybackYears: e.target.value }))}
+                    onChange={(e) =>
+                      setForm((p) => ({ ...p, paybackYears: maskDecimal(e.target.value, 2) }))
+                    }
                     placeholder="Ex: 5,5"
+                    className="max-w-[120px]"
                   />
                 </div>
               </div>
@@ -602,7 +611,12 @@ export default function NewBudgetPage() {
               <Button type="button" variant="outline" onClick={() => setStep(2)}>
                 Voltar
               </Button>
-              <Button type="submit">Salvar orçamento</Button>
+              <Button
+                type="submit"
+                disabled={budgetProducts.length === 0}
+              >
+                Salvar orçamento
+              </Button>
               <Link href="/projects/budget">
                 <Button type="button" variant="outline">Cancelar</Button>
               </Link>

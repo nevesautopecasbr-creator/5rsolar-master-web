@@ -1,14 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api";
-import { maskCpfCnpj, maskPhone, maskCep, maskDecimal } from "@/lib/masks";
+import { maskCpfCnpj, maskPhone, maskCep } from "@/lib/masks";
 import {
   fetchEstados,
   fetchMunicipiosByEstadoId,
@@ -17,16 +15,29 @@ import {
   type Municipio,
 } from "@/lib/br-locations";
 
-type ConsumerUnit = { id?: string; consumerUnitCode: string; currentConsumptionKwh: string };
+type ConsumerUnit = { consumerUnitCode: string; currentConsumptionKwh: string };
 
-export default function EditCustomerPage() {
-  const params = useParams();
-  const router = useRouter();
-  const id = params.id as string;
-  const [loading, setLoading] = useState(true);
+type CustomerFormProps = {
+  /** Chamado após salvar com sucesso (ex: fechar modal e atualizar lista) */
+  onSuccess?: () => void;
+  /** Chamado ao cancelar (ex: fechar modal) */
+  onCancel?: () => void;
+  /** Se true, não mostra título "Novo Cliente" e botão Cancelar leva a onCancel */
+  inline?: boolean;
+};
+
+function maskConsumptionKwh(value: string): string {
+  const digits = value.replace(/[^\d.,]/g, "");
+  const parts = digits.split(/[.,]/);
+  if (parts.length <= 1) return digits;
+  return parts[0] + (parts[1] ? "." + parts[1].slice(0, 2) : "");
+}
+
+export function CustomerForm({ onSuccess, onCancel, inline }: CustomerFormProps) {
   const [status, setStatus] = useState<string | null>(null);
   const [estados, setEstados] = useState<Estado[]>([]);
   const [municipios, setMunicipios] = useState<Municipio[]>([]);
+  const [loadingLocations, setLoadingLocations] = useState(true);
   const [form, setForm] = useState({
     name: "",
     document: "",
@@ -41,57 +52,41 @@ export default function EditCustomerPage() {
     { consumerUnitCode: "", currentConsumptionKwh: "" },
   ]);
 
-  useEffect(() => {
-    let mounted = true;
-    fetchEstados().then((list) => {
-      if (mounted) setEstados(list);
-    });
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  const unitsWithCode = consumerUnits.filter((uc) => uc.consumerUnitCode.trim());
+  const canSubmit =
+    form.name.trim() !== "" &&
+    form.document.replace(/\D/g, "").length >= 11 &&
+    form.phone.replace(/\D/g, "").length >= 10 &&
+    unitsWithCode.length > 0;
+
+  function addConsumerUnit() {
+    setConsumerUnits((prev) => [...prev, { consumerUnitCode: "", currentConsumptionKwh: "" }]);
+  }
+
+  function removeConsumerUnit(idx: number) {
+    setConsumerUnits((prev) => (prev.length > 1 ? prev.filter((_, i) => i !== idx) : prev));
+  }
+
+  function updateConsumerUnit(idx: number, field: keyof ConsumerUnit, value: string) {
+    const next = field === "currentConsumptionKwh" ? maskConsumptionKwh(value) : value;
+    setConsumerUnits((prev) =>
+      prev.map((uc, i) => (i === idx ? { ...uc, [field]: next } : uc))
+    );
+  }
 
   useEffect(() => {
     let mounted = true;
-    apiFetch(`/api/customers/${id}`)
-      .then((r) => r.json())
-      .then((data) => {
-        if (!mounted) return;
-        setForm({
-          name: data.name ?? "",
-          document: maskCpfCnpj(data.document ?? ""),
-          email: data.email ?? "",
-          phone: maskPhone(data.phone ?? ""),
-          address: data.address ?? "",
-          city: data.city ?? "",
-          state: data.state ?? "",
-          zipCode: maskCep(data.zipCode ?? ""),
-        });
-        const ucs = data.consumerUnits ?? [];
-        if (ucs.length > 0) {
-          setConsumerUnits(
-            ucs.map((uc: { consumerUnitCode?: string; currentConsumptionKwh?: number }) => ({
-              consumerUnitCode: String(uc.consumerUnitCode ?? ""),
-              currentConsumptionKwh: uc.currentConsumptionKwh != null ? String(uc.currentConsumptionKwh) : "",
-            })),
-          );
-        } else if (data.consumerUnitCode || data.currentConsumptionKwh != null) {
-          setConsumerUnits([
-            {
-              consumerUnitCode: String(data.consumerUnitCode ?? ""),
-              currentConsumptionKwh: data.currentConsumptionKwh != null ? String(data.currentConsumptionKwh) : "",
-            },
-          ]);
-        }
+    fetchEstados()
+      .then((list) => {
+        if (mounted) setEstados(list);
       })
-      .catch(() => setStatus("Falha ao carregar cliente"))
       .finally(() => {
-        if (mounted) setLoading(false);
+        if (mounted) setLoadingLocations(false);
       });
     return () => {
       mounted = false;
     };
-  }, [id]);
+  }, []);
 
   useEffect(() => {
     if (!form.state.trim()) {
@@ -115,11 +110,13 @@ export default function EditCustomerPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setStatus(null);
+
     const units = consumerUnits.filter((uc) => uc.consumerUnitCode.trim());
     if (units.length === 0) {
       setStatus("Adicione pelo menos uma unidade consumidora com código UC.");
       return;
     }
+
     const payload = {
       name: form.name.trim(),
       document: form.document.replace(/\D/g, ""),
@@ -137,44 +134,35 @@ export default function EditCustomerPage() {
       })),
     };
 
-    const response = await apiFetch(`/api/customers/${id}`, {
-      method: "PATCH",
+    const response = await apiFetch("/api/customers", {
+      method: "POST",
       body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
       const err = await response.json().catch(() => ({}));
-      const msg = err?.message ?? response.statusText;
+      const msg =
+        err?.message ||
+        (Array.isArray(err?.message) ? err.message.join(", ") : null) ||
+        response.statusText;
       setStatus(`Falha ao salvar: ${msg}`);
       return;
     }
 
-    setStatus("Cliente atualizado com sucesso.");
-    router.push("/cadastros/customers");
-  }
-
-  function addConsumerUnit() {
-    setConsumerUnits((prev) => [...prev, { consumerUnitCode: "", currentConsumptionKwh: "" }]);
-  }
-
-  function removeConsumerUnit(idx: number) {
-    setConsumerUnits((prev) => prev.filter((_, i) => i !== idx));
-  }
-
-  if (loading) {
-    return (
-      <div className="text-sm text-brand-navy-600">Carregando...</div>
-    );
+    setStatus("Cliente salvo com sucesso.");
+    onSuccess?.();
   }
 
   return (
     <form onSubmit={handleSubmit} className="grid gap-6">
-      <div>
-        <h1 className="text-lg font-semibold">Editar Cliente</h1>
-        <p className="text-sm text-brand-navy-600">
-          Altere os dados do cliente e das unidades consumidoras.
-        </p>
-      </div>
+      {!inline && (
+        <div>
+          <h1 className="text-lg font-semibold">Novo Cliente</h1>
+          <p className="text-sm text-brand-navy-600">
+            Cadastre o cliente e as unidades consumidoras. Nome, CPF/CNPJ, telefone e ao menos uma UC são obrigatórios.
+          </p>
+        </div>
+      )}
 
       <Card>
         <CardHeader>
@@ -190,6 +178,7 @@ export default function EditCustomerPage() {
               value={form.name}
               onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
               placeholder="Nome completo ou razão social"
+              className="max-w-md"
             />
           </div>
           <div className="grid gap-2">
@@ -202,16 +191,7 @@ export default function EditCustomerPage() {
                 setForm((p) => ({ ...p, document: maskCpfCnpj(e.target.value) }))
               }
               placeholder="000.000.000-00 ou 00.000.000/0001-00"
-            />
-          </div>
-          <div className="grid gap-2">
-            <Label htmlFor="email">E-mail</Label>
-            <Input
-              id="email"
-              type="email"
-              value={form.email}
-              onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-              placeholder="email@exemplo.com"
+              className="max-w-xs"
             />
           </div>
           <div className="grid gap-2">
@@ -224,6 +204,18 @@ export default function EditCustomerPage() {
                 setForm((p) => ({ ...p, phone: maskPhone(e.target.value) }))
               }
               placeholder="(00) 00000-0000"
+              className="max-w-xs"
+            />
+          </div>
+          <div className="grid gap-2 sm:col-span-2">
+            <Label htmlFor="email">E-mail</Label>
+            <Input
+              id="email"
+              type="email"
+              value={form.email}
+              onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
+              placeholder="email@exemplo.com"
+              className="max-w-md"
             />
           </div>
           <div className="grid gap-2 sm:col-span-2">
@@ -233,17 +225,19 @@ export default function EditCustomerPage() {
               value={form.address}
               onChange={(e) => setForm((p) => ({ ...p, address: e.target.value }))}
               placeholder="Rua, número, complemento"
+              className="max-w-md"
             />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="state">Estado</Label>
             <select
               id="state"
-              className="flex h-10 w-full rounded-md border border-brand-navy-300 bg-white px-3 py-2 text-sm"
+              className="flex h-10 w-full max-w-[200px] rounded-md border border-brand-navy-300 bg-white px-3 py-2 text-sm"
               value={form.state}
               onChange={(e) =>
                 setForm((p) => ({ ...p, state: e.target.value, city: "" }))
               }
+              disabled={loadingLocations}
             >
               <option value="">Selecione o estado</option>
               {estados.map((e) => (
@@ -257,7 +251,7 @@ export default function EditCustomerPage() {
             <Label htmlFor="city">Cidade</Label>
             <select
               id="city"
-              className="flex h-10 w-full rounded-md border border-brand-navy-300 bg-white px-3 py-2 text-sm"
+              className="flex h-10 w-full max-w-[200px] rounded-md border border-brand-navy-300 bg-white px-3 py-2 text-sm"
               value={form.city}
               onChange={(e) => setForm((p) => ({ ...p, city: e.target.value }))}
               disabled={!form.state || municipios.length === 0}
@@ -279,21 +273,22 @@ export default function EditCustomerPage() {
                 setForm((p) => ({ ...p, zipCode: maskCep(e.target.value) }))
               }
               placeholder="00000-000"
+              className="max-w-[140px]"
             />
           </div>
         </CardContent>
       </Card>
 
       <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
+        <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-base font-medium">Unidades Consumidoras</h2>
             <p className="text-sm text-brand-navy-600">
-              O cliente pode ter mais de uma unidade consumidora
+              O cliente pode ter mais de uma unidade. Adicione pelo menos uma.
             </p>
           </div>
           <Button type="button" variant="outline" onClick={addConsumerUnit}>
-            Adicionar UC
+            + Adicionar UC
           </Button>
         </CardHeader>
         <CardContent className="grid gap-4">
@@ -302,34 +297,25 @@ export default function EditCustomerPage() {
               key={idx}
               className="flex flex-wrap items-end gap-4 rounded-lg border border-brand-navy-100 p-4"
             >
-              <div className="grid flex-1 min-w-[200px] gap-2">
+              <div className="grid min-w-[180px] flex-1 gap-2">
                 <Label>Código UC</Label>
                 <Input
                   value={uc.consumerUnitCode}
                   onChange={(e) =>
-                    setConsumerUnits((prev) =>
-                      prev.map((p, i) =>
-                        i === idx ? { ...p, consumerUnitCode: e.target.value } : p,
-                      ),
-                    )
+                    updateConsumerUnit(idx, "consumerUnitCode", e.target.value)
                   }
-                  placeholder="Código UC na concessionária"
+                  placeholder="Código na concessionária"
+                  className="max-w-xs"
                 />
               </div>
-              <div className="grid flex-1 min-w-[120px] gap-2">
+              <div className="grid min-w-[100px] flex-1 gap-2">
                 <Label>Consumo (kWh)</Label>
                 <Input
                   type="text"
                   inputMode="decimal"
                   value={uc.currentConsumptionKwh}
                   onChange={(e) =>
-                    setConsumerUnits((prev) =>
-                      prev.map((p, i) =>
-                        i === idx
-                          ? { ...p, currentConsumptionKwh: maskDecimal(e.target.value, 2) }
-                          : p,
-                      ),
-                    )
+                    updateConsumerUnit(idx, "currentConsumptionKwh", e.target.value)
                   }
                   placeholder="Ex: 500"
                   className="max-w-[120px]"
@@ -339,7 +325,7 @@ export default function EditCustomerPage() {
                 type="button"
                 variant="ghost"
                 onClick={() => removeConsumerUnit(idx)}
-                disabled={consumerUnits.length <= 1}
+                disabled={consumerUnits.length === 1}
               >
                 Remover
               </Button>
@@ -358,22 +344,14 @@ export default function EditCustomerPage() {
         </p>
       )}
       <div className="flex gap-2">
-        <Button
-          type="submit"
-          disabled={
-            !form.name.trim() ||
-            form.document.replace(/\D/g, "").length < 11 ||
-            form.phone.replace(/\D/g, "").length < 10 ||
-            consumerUnits.filter((uc) => uc.consumerUnitCode.trim()).length === 0
-          }
-        >
+        <Button type="submit" disabled={!canSubmit}>
           Salvar
         </Button>
-        <Link href="/cadastros/customers">
-          <Button type="button" variant="outline">
+        {onCancel && (
+          <Button type="button" variant="outline" onClick={onCancel}>
             Cancelar
           </Button>
-        </Link>
+        )}
       </div>
     </form>
   );

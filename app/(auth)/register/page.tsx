@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Logo } from "@/components/logo";
 import { IconSolarRays } from "@/components/icons/solar-icons";
 import { getApiBaseUrl } from "@/lib/api";
+import { maskPhone } from "@/lib/masks";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -20,22 +21,6 @@ export default function RegisterPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [passwordHints, setPasswordHints] = useState<string[]>([]);
-
-  function formatPhone(value: string) {
-    const digits = value.replace(/\D/g, "").slice(0, 11);
-    if (digits.length <= 2) {
-      return digits;
-    }
-    const ddd = digits.slice(0, 2);
-    const rest = digits.slice(2);
-    if (rest.length <= 4) {
-      return `(${ddd}) ${rest}`;
-    }
-    if (rest.length <= 8) {
-      return `(${ddd}) ${rest.slice(0, 4)} ${rest.slice(4)}`;
-    }
-    return `(${ddd}) ${rest.slice(0, 5)} ${rest.slice(5)}`;
-  }
 
   function validatePassword(value: string) {
     const hints: string[] = [];
@@ -77,7 +62,12 @@ export default function RegisterPage() {
       response = await fetch(registerUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, phone, password }),
+        body: JSON.stringify({
+          name,
+          email,
+          phone: phone.replace(/\D/g, ""),
+          password,
+        }),
         credentials: "include",
       });
     } catch {
@@ -144,14 +134,7 @@ export default function RegisterPage() {
                 type="tel"
                 placeholder="(00) 00000-0000"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                onBlur={(e) => setPhone(formatPhone(e.target.value))}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    e.preventDefault();
-                    setPhone(formatPhone(e.currentTarget.value));
-                  }
-                }}
+                onChange={(e) => setPhone(maskPhone(e.target.value))}
                 required
               />
             </div>
@@ -187,7 +170,19 @@ export default function RegisterPage() {
                 ))}
               </div>
             ) : null}
-            <Button type="submit" className="mt-2">
+            <Button
+              type="submit"
+              className="mt-2"
+              disabled={
+                !name.trim() ||
+                !email.trim() ||
+                !phone.replace(/\D/g, "").trim() ||
+                phone.replace(/\D/g, "").length < 10 ||
+                password.length < 8 ||
+                password !== confirmPassword ||
+                validatePassword(password).length > 0
+              }
+            >
               Criar conta
             </Button>
           </form>

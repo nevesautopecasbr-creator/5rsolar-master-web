@@ -8,10 +8,10 @@ export default function Page() {
       endpoint="/api/cash-movements"
       onSuccessRedirect="/finance/cash"
       fields={[
-        { name: 'cashAccountId', label: 'Conta caixa', type: 'text', placeholder: 'ID da conta' },
-        { name: 'direction', label: 'Direção', type: 'text', placeholder: 'IN ou OUT' },
-        { name: 'amount', label: 'Valor', type: 'number' },
-        { name: 'movementDate', label: 'Data', type: 'date' },
+        { name: 'cashAccountId', label: 'Conta caixa', type: 'text', placeholder: 'ID da conta', required: true },
+        { name: 'direction', label: 'Direção', type: 'text', placeholder: 'IN ou OUT', required: true },
+        { name: 'amount', label: 'Valor (R$)', type: 'text', mask: 'money', required: true },
+        { name: 'movementDate', label: 'Data', type: 'date', required: true },
         { name: 'description', label: 'Descrição', type: 'text' },
         { name: 'projectId', label: 'Projeto', type: 'text', placeholder: 'ID do projeto' },
         { name: 'accountId', label: 'Conta contábil', type: 'text' },

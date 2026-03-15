@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api";
-import { maskMoney, maskMoneyFromNumber, parseMoney } from "@/lib/masks";
+import { maskMoney, maskMoneyFromNumber, parseMoney, maskOnlyNumbers } from "@/lib/masks";
 
 type ContractContext = {
   projectId: string;
@@ -319,11 +319,17 @@ function NewContractForm() {
                 <Label htmlFor="installmentsCount">Número de parcelas</Label>
                 <Input
                   id="installmentsCount"
-                  type="number"
-                  min={0}
+                  type="text"
+                  inputMode="numeric"
                   value={form.installmentsCount}
-                  onChange={(e) => setForm((p) => ({ ...p, installmentsCount: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((p) => ({
+                      ...p,
+                      installmentsCount: maskOnlyNumbers(e.target.value, 4),
+                    }))
+                  }
                   placeholder="Ex: 12"
+                  className="max-w-[120px]"
                 />
               </div>
               <div className="grid gap-2">
@@ -339,10 +345,16 @@ function NewContractForm() {
                 <Label htmlFor="intervalDays">Intervalo (dias)</Label>
                 <Input
                   id="intervalDays"
-                  type="number"
-                  min={1}
+                  type="text"
+                  inputMode="numeric"
                   value={form.intervalDays}
-                  onChange={(e) => setForm((p) => ({ ...p, intervalDays: e.target.value }))}
+                  onChange={(e) =>
+                    setForm((p) => ({
+                      ...p,
+                      intervalDays: maskOnlyNumbers(e.target.value, 3),
+                    }))
+                  }
+                  className="max-w-[100px]"
                 />
               </div>
             </div>

@@ -1,6 +1,10 @@
 "use client";
 
+import { useState, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { DataPage } from "@/components/data-page";
+import { Modal } from "@/components/ui/modal";
+import { Button } from "@/components/ui/button";
 
 function fmtNum(v: unknown): string {
   if (v == null) return "—";
@@ -9,7 +13,11 @@ function fmtNum(v: unknown): string {
 }
 
 export default function Page() {
-  const mapRow = (row: Record<string, unknown>) => ({
+  const router = useRouter();
+  const [modalOpen, setModalOpen] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+  const mapRow = useCallback((row: Record<string, unknown>) => ({
     Cliente: String(row.customerName ?? "—"),
     "Consumo (kWh)": fmtNum(row.consumptionKwh),
     UC: String(row.consumerUnitCode ?? "—"),
@@ -20,25 +28,60 @@ export default function Page() {
         : "—",
     "Criar projeto": `/projects/new?budgetId=${String(row.id ?? "")}`,
     Editar: `/projects/budget/${String(row.id ?? "")}/edit`,
-  });
+  }), []);
+
+  const handleOpenNew = useCallback(() => {
+    setModalOpen(true);
+  }, []);
+
+  const handleGoToFullForm = useCallback(() => {
+    setModalOpen(false);
+    router.push("/projects/budget/new");
+  }, [router]);
 
   return (
-    <DataPage
-      title="Orçamentos"
-      description="Propostas comerciais com consumo, UC, potência e valores. Crie um projeto a partir de um orçamento."
-      newHref="/projects/budget/new"
-      searchPlaceholder="Pesquisar orçamentos..."
-      endpoint="/api/project-budgets"
-      columns={[
-        { key: "Cliente", label: "Cliente" },
-        { key: "Consumo (kWh)", label: "Consumo (kWh)" },
-        { key: "UC", label: "UC" },
-        { key: "Potência (kWp)", label: "Potência (kWp)" },
-        { key: "Valor total", label: "Valor total" },
-        { key: "Criar projeto", label: "Criar projeto" },
-        { key: "Editar", label: "Editar" },
-      ]}
-      mapRow={mapRow}
-    />
+    <>
+      <DataPage
+        key={refreshKey}
+        title="Orçamentos"
+        description="Propostas comerciais com consumo, UC, potência e valores. Crie um projeto a partir de um orçamento."
+        newHref="/projects/budget/new"
+        newLabel="Novo orçamento"
+        onNewClick={handleOpenNew}
+        searchPlaceholder="Pesquisar orçamentos..."
+        endpoint="/api/project-budgets"
+        columns={[
+          { key: "Cliente", label: "Cliente" },
+          { key: "Consumo (kWh)", label: "Consumo (kWh)" },
+          { key: "UC", label: "UC" },
+          { key: "Potência (kWp)", label: "Potência (kWp)" },
+          { key: "Valor total", label: "Valor total" },
+          { key: "Criar projeto", label: "Criar projeto" },
+          { key: "Editar", label: "Editar" },
+        ]}
+        mapRow={mapRow}
+      />
+      <Modal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title="Novo Orçamento"
+        description="O orçamento possui várias etapas (projeto, produtos, revisão). Use o formulário completo para preencher."
+        size="md"
+      >
+        <div className="flex flex-col gap-4">
+          <p className="text-sm text-brand-navy-600">
+            Você será redirecionado para o formulário completo do orçamento.
+          </p>
+          <div className="flex gap-2">
+            <Button type="button" onClick={handleGoToFullForm}>
+              Abrir formulário de orçamento
+            </Button>
+            <Button type="button" variant="outline" onClick={() => setModalOpen(false)}>
+              Cancelar
+            </Button>
+          </div>
+        </div>
+      </Modal>
+    </>
   );
 }

@@ -9,6 +9,8 @@ type DataPageProps = {
   description: string;
   newHref: string;
   newLabel?: string;
+  /** Se definido, o botão "Novo" abre modal em vez de navegar (chama esta função) */
+  onNewClick?: () => void;
   searchPlaceholder?: string;
   endpoint: string;
   columns: Array<{ key: string; label: string }>;
@@ -20,6 +22,7 @@ export function DataPage({
   description,
   newHref,
   newLabel,
+  onNewClick,
   searchPlaceholder,
   endpoint,
   columns,
@@ -48,6 +51,7 @@ export function DataPage({
       description={description}
       newHref={newHref}
       newLabel={newLabel}
+      onNewClick={onNewClick}
       searchPlaceholder={searchPlaceholder}
       columns={columns}
       rows={rows}

@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api";
 import { COMPANY_CONTEXT_UPDATED } from "@/lib/session";
+import { maskPhone } from "@/lib/masks";
 
 type Role = { id: string; name: string };
 
@@ -167,8 +168,11 @@ export default function NewUserPage() {
           <Input
             id="phone"
             value={form.phone}
-            onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
+            onChange={(e) =>
+              setForm((p) => ({ ...p, phone: maskPhone(e.target.value) }))
+            }
             placeholder="(00) 00000-0000"
+            className="max-w-[180px]"
           />
         </div>
         <div className="grid gap-2">
@@ -218,7 +222,16 @@ export default function NewUserPage() {
           </div>
         ) : null}
         <div className="flex gap-2">
-          <Button type="submit" disabled={saving}>
+          <Button
+            type="submit"
+            disabled={
+              saving ||
+              !form.name.trim() ||
+              !form.email.trim() ||
+              form.password.length < 6 ||
+              !form.roleId.trim()
+            }
+          >
             {saving ? "Salvando..." : "Salvar"}
           </Button>
           <Link href="/iam/users">
