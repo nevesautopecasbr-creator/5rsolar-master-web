@@ -154,7 +154,17 @@ export function DynamicForm({
       const val = form[field.name];
       if (field.type === "checkbox") return true;
       if (field.type === "products") return Array.isArray(val) && val.length > 0;
-      return String(val ?? "").trim() !== "";
+      const str = String(val ?? "").trim();
+      if (str === "") return false;
+      // Campo monetário: considerar preenchido se tiver ao menos um dígito
+      if (field.mask === "money" || field.name === "amount" || field.name === "value" || field.name === "totalValue") {
+        return str.replace(/\D/g, "").length > 0;
+      }
+      // Campo data: considerar preenchido se tiver formato de data (ex: YYYY-MM-DD = 10 chars)
+      if (field.type === "date") {
+        return str.length >= 8;
+      }
+      return true;
     });
   }, [form, requiredFields]);
 

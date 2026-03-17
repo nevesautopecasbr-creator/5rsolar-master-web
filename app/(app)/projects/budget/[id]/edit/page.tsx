@@ -12,13 +12,6 @@ import { maskMoney, maskMoneyFromNumber, parseMoney } from "@/lib/masks";
 
 type Product = { id: string; name: string; price?: number | null; unit?: string | null };
 type BudgetProduct = { productId: string; name: string; price: number; quantity: number };
-type BudgetContext = {
-  customerName: string | null;
-  consumptionKwh: number | null;
-  consumerUnitCode: string | null;
-  systemPowerKwp: number | null;
-};
-
 function formatMoney(n: number) {
   return n.toLocaleString("pt-BR", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
@@ -28,11 +21,9 @@ export default function EditBudgetPage() {
   const router = useRouter();
   const id = params.id as string;
   const [products, setProducts] = useState<Product[]>([]);
-  const [projects, setProjects] = useState<Array<{ id: string; name: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<string | null>(null);
   const [form, setForm] = useState({
-    projectId: "",
     customerName: "",
     consumptionKwh: "",
     consumerUnitCode: "",
@@ -54,15 +45,12 @@ export default function EditBudgetPage() {
     let mounted = true;
     Promise.all([
       apiFetch("/api/products").then((r) => r.json()),
-      apiFetch("/api/projects").then((r) => r.json()),
       apiFetch(`/api/project-budgets/${id}`).then((r) => r.json()),
     ])
-      .then(([prods, projs, budget]) => {
+      .then(([prods, budget]) => {
         if (!mounted) return;
         setProducts(Array.isArray(prods) ? prods.filter((p: Product) => p.id) : []);
-        setProjects(Array.isArray(projs) ? projs : []);
         setForm({
-          projectId: budget.projectId ?? "",
           customerName: budget.customerName ?? "",
           consumptionKwh: budget.consumptionKwh != null ? String(budget.consumptionKwh) : "",
           consumerUnitCode: budget.consumerUnitCode ?? "",
@@ -97,27 +85,6 @@ export default function EditBudgetPage() {
       mounted = false;
     };
   }, [id]);
-
-  async function onProjectChange(projectId: string) {
-    setForm((p) => ({ ...p, projectId }));
-    if (projectId) {
-      try {
-        const r = await apiFetch(`/api/project-budgets/context/${projectId}`);
-        if (!r.ok) return;
-        const ctx: BudgetContext = await r.json();
-        setForm((p) => ({
-          ...p,
-          projectId,
-          customerName: ctx.customerName ?? "",
-          consumptionKwh: ctx.consumptionKwh != null ? String(ctx.consumptionKwh) : "",
-          consumerUnitCode: ctx.consumerUnitCode ?? "",
-          systemPowerKwp: ctx.systemPowerKwp != null ? String(ctx.systemPowerKwp) : "",
-        }));
-      } catch {
-        /* ignore */
-      }
-    }
-  }
 
   function addProduct() {
     const first = products[0];
@@ -184,7 +151,6 @@ export default function EditBudgetPage() {
     e.preventDefault();
     setStatus(null);
     const payload = {
-      projectId: form.projectId || undefined,
       customerName: form.customerName.trim() || undefined,
       consumptionKwh: form.consumptionKwh ? Number(form.consumptionKwh.replace(",", ".")) : undefined,
       consumerUnitCode: form.consumerUnitCode.trim() || undefined,
@@ -242,27 +208,10 @@ export default function EditBudgetPage() {
         <CardHeader>
           <h2 className="text-base font-semibold text-brand-navy-900">Dados da proposta</h2>
           <p className="text-sm text-brand-navy-600">
-            Projeto, cliente, consumo (kWh), UC, potência (kWp) e custos.
+            Cliente, consumo (kWh), UC, potência (kWp) e custos.
           </p>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid gap-2">
-            <Label htmlFor="projectId">Projeto (opcional)</Label>
-            <select
-              id="projectId"
-              className="flex h-10 w-full rounded-md border border-brand-navy-300 bg-white px-3 py-2 text-sm"
-              value={form.projectId}
-              onChange={(e) => onProjectChange(e.target.value)}
-            >
-              <option value="">Nenhum</option>
-              {projects.map((pr) => (
-                <option key={pr.id} value={pr.id}>
-                  {pr.name}
-                </option>
-              ))}
-            </select>
-          </div>
-
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="customerName">Cliente</Label>

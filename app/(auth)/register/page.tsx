@@ -178,9 +178,9 @@ export default function RegisterPage() {
                 !email.trim() ||
                 !phone.replace(/\D/g, "").trim() ||
                 phone.replace(/\D/g, "").length < 10 ||
+                !password ||
                 password.length < 8 ||
-                password !== confirmPassword ||
-                validatePassword(password).length > 0
+                password !== confirmPassword
               }
             >
               Criar conta

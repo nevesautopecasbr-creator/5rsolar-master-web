@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -12,15 +12,9 @@ import { maskMoney, maskMoneyFromNumber, parseMoney, maskDecimal } from "@/lib/m
 
 type Product = { id: string; name: string; price?: number | null; unit?: string | null };
 type BudgetProduct = { productId: string; name: string; price: number; quantity: number };
-type BudgetContext = {
-  customerName: string | null;
-  consumptionKwh: number | null;
-  consumerUnitCode: string | null;
-  systemPowerKwp: number | null;
-};
 
 const STEPS = [
-  { id: 1, title: "Projeto e dados da proposta", description: "Vincule ao projeto para herdar consumo e UC do cliente" },
+  { id: 1, title: "Dados da proposta", description: "Preencha os dados do cliente e da proposta comercial" },
   { id: 2, title: "Produtos e serviços", description: "Adicione itens ao orçamento" },
   { id: 3, title: "Revisão", description: "Confira e salve o orçamento" },
 ];
@@ -34,11 +28,9 @@ export default function NewBudgetPage() {
   const searchParams = useSearchParams();
   const [step, setStep] = useState(1);
   const [products, setProducts] = useState<Product[]>([]);
-  const [projects, setProjects] = useState<Array<{ id: string; name: string }>>([]);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<string | null>(null);
   const [form, setForm] = useState({
-    projectId: "",
     customerName: "",
     consumptionKwh: "",
     consumerUnitCode: "",
@@ -57,7 +49,6 @@ export default function NewBudgetPage() {
     notes: "",
   });
   const [budgetProducts, setBudgetProducts] = useState<BudgetProduct[]>([]);
-  const [contextLoaded, setContextLoaded] = useState(false);
 
   // Preencher a partir do simulador (query string)
   useEffect(() => {
@@ -84,45 +75,13 @@ export default function NewBudgetPage() {
     }
   }, [searchParams]);
 
-  const loadContext = useCallback(async (projectId: string) => {
-    if (!projectId) {
-      setForm((p) => ({
-        ...p,
-        customerName: "",
-        consumptionKwh: "",
-        consumerUnitCode: "",
-        systemPowerKwp: "",
-      }));
-      setContextLoaded(false);
-      return;
-    }
-    try {
-      const r = await apiFetch(`/api/project-budgets/context/${projectId}`);
-      if (!r.ok) return;
-      const ctx: BudgetContext = await r.json();
-      setForm((p) => ({
-        ...p,
-        customerName: ctx.customerName ?? "",
-        consumptionKwh: ctx.consumptionKwh != null ? String(ctx.consumptionKwh) : "",
-        consumerUnitCode: ctx.consumerUnitCode ?? "",
-        systemPowerKwp: ctx.systemPowerKwp != null ? String(ctx.systemPowerKwp) : "",
-      }));
-      setContextLoaded(true);
-    } catch {
-      setContextLoaded(false);
-    }
-  }, []);
-
   useEffect(() => {
     let mounted = true;
-    Promise.all([
-      apiFetch("/api/products").then((r) => r.json()),
-      apiFetch("/api/projects").then((r) => r.json()),
-    ])
-      .then(([prods, projs]) => {
+    apiFetch("/api/products")
+      .then((r) => r.json())
+      .then((prods: Product[]) => {
         if (!mounted) return;
         setProducts(Array.isArray(prods) ? prods.filter((p: Product) => p.id) : []);
-        setProjects(Array.isArray(projs) ? projs : []);
       })
       .catch(() => {})
       .finally(() => {
@@ -132,10 +91,6 @@ export default function NewBudgetPage() {
       mounted = false;
     };
   }, []);
-
-  useEffect(() => {
-    loadContext(form.projectId);
-  }, [form.projectId, loadContext]);
 
   function addProduct() {
     const first = products[0];
@@ -179,7 +134,6 @@ export default function NewBudgetPage() {
     e.preventDefault();
     setStatus(null);
     const payload = {
-      projectId: form.projectId || undefined,
       customerName: form.customerName.trim() || undefined,
       consumptionKwh: form.consumptionKwh ? Number(form.consumptionKwh.replace(",", ".")) : undefined,
       consumerUnitCode: form.consumerUnitCode.trim() || undefined,
@@ -272,26 +226,6 @@ export default function NewBudgetPage() {
             <p className="text-sm text-brand-navy-600">{STEPS[0].description}</p>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="grid gap-2">
-              <Label htmlFor="projectId">Projeto (opcional)</Label>
-              <select
-                id="projectId"
-                className="flex h-10 w-full rounded-md border border-brand-navy-300 bg-white px-3 py-2 text-sm"
-                value={form.projectId}
-                onChange={(e) => setForm((p) => ({ ...p, projectId: e.target.value }))}
-              >
-                <option value="">Nenhum — preencher manualmente</option>
-                {projects.map((pr) => (
-                  <option key={pr.id} value={pr.id}>
-                    {pr.name}
-                  </option>
-                ))}
-              </select>
-              {contextLoaded && (
-                <p className="text-xs text-green-700">Dados do cliente e consumo herdados do cadastro.</p>
-              )}
-            </div>
-
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="customerName">Cliente</Label>
