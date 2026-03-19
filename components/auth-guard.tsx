@@ -5,43 +5,37 @@ import { usePathname, useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { setUserCompanyContext } from "@/lib/session";
 
-/** Cookie definido pela API após login (auth.controller) */
-const ACCESS_TOKEN_COOKIE = "access_token";
-
-function hasSessionCookie(): boolean {
-  if (typeof document === "undefined") return false;
-  return document.cookie.includes(`${ACCESS_TOKEN_COOKIE}=`);
-}
-
 export function AuthGuard({ children }: { children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const [allowed, setAllowed] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (hasSessionCookie()) {
-      setAllowed(true);
-    } else {
-      const from = pathname ? `?from=${encodeURIComponent(pathname)}` : "";
-      router.replace(`/login${from}`);
-    }
-  }, [router, pathname]);
-
-  // Sincroniza empresa do usuário (contexto) ao entrar na app
-  useEffect(() => {
-    if (!allowed) return;
     let cancelled = false;
     apiFetch("/api/auth/me", { method: "GET" })
-      .then((res) => (res.ok ? res.json() : null))
+      .then((res) => {
+        if (cancelled) return;
+        if (res.ok) {
+          setAllowed(true);
+          return res.json();
+        }
+        const from = pathname ? `?from=${encodeURIComponent(pathname)}` : "";
+        router.replace(`/login${from}`);
+      })
       .then((data: { companyId?: string | null; companyName?: string | null } | null) => {
         if (cancelled || !data) return;
         setUserCompanyContext(data.companyId ?? null, data.companyName ?? null);
       })
-      .catch(() => {});
+      .catch(() => {
+        if (!cancelled) {
+          const from = pathname ? `?from=${encodeURIComponent(pathname)}` : "";
+          router.replace(`/login${from}`);
+        }
+      });
     return () => {
       cancelled = true;
     };
-  }, [allowed]);
+  }, [router, pathname]);
 
   if (allowed !== true) {
     return (
