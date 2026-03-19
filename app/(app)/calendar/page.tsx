@@ -19,7 +19,7 @@ type Payable = {
   description: string;
   dueDate: string;
   status?: string | null;
-  amount: number;
+  amount: number | string | null;
 };
 
 type CalendarEvent = {
@@ -87,6 +87,17 @@ function buildMonthDays(reference: Date) {
   return days;
 }
 
+function formatAmountBr(value: number | string | null | undefined) {
+  if (value == null) return "R$ 0,00";
+  const amount =
+    typeof value === "number" ? value : Number(String(value).replace(",", "."));
+  if (Number.isNaN(amount)) return "R$ 0,00";
+  return amount.toLocaleString("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  });
+}
+
 export default function CalendarPage() {
   const [referenceDate, setReferenceDate] = useState(() => new Date());
   const [tasks, setTasks] = useState<WorkOrder[]>([]);
@@ -100,9 +111,6 @@ export default function CalendarPage() {
       .then(async ([tasksRes, payablesRes]) => {
         const tasksData = tasksRes.ok ? await tasksRes.json() : [];
         const payablesData = payablesRes.ok ? await payablesRes.json() : [];
-        // #region agent log
-        fetch('http://127.0.0.1:7242/ingest/7c7a3af8-2979-4f40-9dcc-4e60fdd8a2be',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/(app)/calendar/page.tsx:103',message:'calendar_load_data',data:{tasksCount:Array.isArray(tasksData)?tasksData.length:0,payablesCount:Array.isArray(payablesData)?payablesData.length:0,firstTaskId:Array.isArray(tasksData)&&tasksData[0]?.id?tasksData[0].id:undefined},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'C1'})}).catch(()=>{});
-        // #endregion
         if (!active) return;
         setTasks(Array.isArray(tasksData) ? tasksData : []);
         setPayables(Array.isArray(payablesData) ? payablesData : []);
@@ -149,7 +157,7 @@ export default function CalendarPage() {
             dateKey: toDateKey(payable.dueDate),
             title: payable.description,
             type: "payable",
-            subtitle: `R$ ${payable.amount.toFixed(2)}`,
+            subtitle: formatAmountBr(payable.amount),
             href: `/finance/payables/${payable.id}`,
           }))
           .filter((item) => item.dateKey)
@@ -268,11 +276,6 @@ export default function CalendarPage() {
                         <Link
                           key={event.id}
                           href={event.href ?? "#"}
-                          onClick={() => {
-                            // #region agent log
-                            fetch('http://127.0.0.1:7242/ingest/7c7a3af8-2979-4f40-9dcc-4e60fdd8a2be',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'app/(app)/calendar/page.tsx:266',message:'calendar_event_click',data:{eventType:event.type,href:event.href},timestamp:Date.now(),sessionId:'debug-session',runId:'pre-fix',hypothesisId:'C2'})}).catch(()=>{});
-                            // #endregion
-                          }}
                           className={`rounded-md px-2 py-1 text-[11px] ${
                             event.type === "task"
                               ? "bg-emerald-50 text-emerald-700"
