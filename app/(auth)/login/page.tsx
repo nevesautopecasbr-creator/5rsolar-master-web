@@ -1,7 +1,7 @@
 "use client";
 
 import type { FormEvent } from "react";
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ import { Logo } from "@/components/logo";
 import { IconSolarRays } from "@/components/icons/solar-icons";
 import { getApiBaseUrl } from "@/lib/api";
 
-export default function LoginPage() {
+function LoginForm() {
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -117,5 +117,19 @@ export default function LoginPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen flex-col items-center justify-center bg-brand-navy-50 p-4">
+          <p className="text-brand-navy-600">Carregando...</p>
+        </div>
+      }
+    >
+      <LoginForm />
+    </Suspense>
   );
 }
