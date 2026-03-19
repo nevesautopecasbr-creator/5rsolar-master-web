@@ -3,7 +3,12 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
-import { setUserCompanyContext } from "@/lib/session";
+import { SESSION_COOKIE_NAME, setUserCompanyContext } from "@/lib/session";
+
+function hasFrontendSessionCookie(): boolean {
+  if (typeof document === "undefined") return false;
+  return document.cookie.includes(`${SESSION_COOKIE_NAME}=`);
+}
 
 export function AuthGuard({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -12,12 +17,20 @@ export function AuthGuard({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
+    const hasLocalSession = hasFrontendSessionCookie();
+    if (hasLocalSession) {
+      setAllowed(true);
+    }
     apiFetch("/api/auth/me", { method: "GET" })
       .then((res) => {
         if (cancelled) return;
         if (res.ok) {
           setAllowed(true);
           return res.json();
+        }
+        if (hasLocalSession) {
+          // Evita loop de login quando cookies da API ainda não sincronizaram.
+          return null;
         }
         const from = pathname ? `?from=${encodeURIComponent(pathname)}` : "";
         router.replace(`/login${from}`);
@@ -28,6 +41,7 @@ export function AuthGuard({ children }: { children: ReactNode }) {
       })
       .catch(() => {
         if (!cancelled) {
+          if (hasLocalSession) return;
           const from = pathname ? `?from=${encodeURIComponent(pathname)}` : "";
           router.replace(`/login${from}`);
         }

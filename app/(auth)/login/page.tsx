@@ -11,6 +11,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Logo } from "@/components/logo";
 import { IconSolarRays } from "@/components/icons/solar-icons";
 import { getApiBaseUrl } from "@/lib/api";
+import { setSessionCookie } from "@/lib/session";
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -54,6 +55,8 @@ function LoginForm() {
       return;
     }
 
+    // Mantém sessão também no domínio do frontend para evitar loop de redirecionamento
+    setSessionCookie();
     const redirectTo = searchParams.get("from") || "/dashboard";
     window.location.href = redirectTo;
   }
