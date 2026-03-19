@@ -66,9 +66,10 @@ export function maskMoney(value: string): string {
 
 /**
  * Converte valor numérico (ex: da API) para string mascarada para exibição.
- * Aceita number, string ou Decimal (API/Prisma) e normaliza para número.
+ * Aceita number, string ou Decimal/objeto (API/Prisma) e normaliza para número.
+ * Não chama .toFixed no valor bruto para evitar erro quando amount vem como objeto.
  */
-export function maskMoneyFromNumber(value: number | string | null | undefined): string {
+export function maskMoneyFromNumber(value: number | string | null | undefined | Record<string, unknown>): string {
   if (value == null) return "";
   const n = typeof value === "number" ? value : Number(value);
   if (Number.isNaN(n)) return "";
@@ -86,6 +87,23 @@ export function parseMoney(value: string): number {
   const normalized = value.replace(/\./g, "").replace(",", ".");
   const n = Number(normalized);
   return Number.isNaN(n) ? 0 : n;
+}
+
+/**
+ * Formata valor vindo da API (number, string ou Decimal/objeto) para exibição em R$.
+ * Evita "toFixed is not a function" quando amount vem como objeto (ex.: Prisma Decimal).
+ */
+export function formatAmountFromApi(value: unknown): string {
+  if (value == null) return "—";
+  if (typeof value === "number" && !Number.isNaN(value)) {
+    return value.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  }
+  if (typeof value === "string") {
+    const n = Number(value.replace(",", "."));
+    return Number.isNaN(n) ? "—" : n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  }
+  const n = Number(value);
+  return Number.isNaN(n) ? "—" : n.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
 /**

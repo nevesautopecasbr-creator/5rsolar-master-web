@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { DataPage } from "@/components/data-page";
 import { Modal } from "@/components/ui/modal";
 import { DynamicForm } from "@/components/dynamic-form";
+import { formatAmountFromApi } from "@/lib/masks";
 
 const CASH_MOVEMENT_FIELDS = [
   { name: "cashAccountId", label: "Conta caixa", type: "text", required: true },
@@ -43,7 +44,7 @@ export default function Page() {
         mapRow={(row) => ({
           Conta: String(row.cashAccountId ?? "-"),
           Direção: String(row.direction ?? "-"),
-          Valor: String(row.amount ?? "-"),
+          Valor: formatAmountFromApi(row.amount),
           Data: String(row.movementDate ?? "-"),
         })}
       />

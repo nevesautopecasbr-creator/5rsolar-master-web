@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { DataPage } from "@/components/data-page";
 import { Modal } from "@/components/ui/modal";
 import { DynamicForm } from "@/components/dynamic-form";
+import { formatAmountFromApi } from "@/lib/masks";
 
 const PAYABLE_FIELDS = [
   { name: "description", label: "Descrição", type: "text", required: true },
@@ -45,7 +46,7 @@ export default function Page() {
         mapRow={(row) => ({
           Descrição: String(row.description ?? "-"),
           Projeto: String(row.projectId ?? "-"),
-          Valor: String(row.amount ?? "-"),
+          Valor: formatAmountFromApi(row.amount),
           Vencimento: String(row.dueDate ?? "-"),
         })}
       />

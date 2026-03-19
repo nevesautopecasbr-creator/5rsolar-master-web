@@ -5,11 +5,12 @@ import { usePathname, useRouter } from "next/navigation";
 import { apiFetch } from "@/lib/api";
 import { setUserCompanyContext } from "@/lib/session";
 
-const SESSION_COOKIE_NAME = "app_session";
+/** Cookie definido pela API após login (auth.controller) */
+const ACCESS_TOKEN_COOKIE = "access_token";
 
 function hasSessionCookie(): boolean {
   if (typeof document === "undefined") return false;
-  return document.cookie.includes(`${SESSION_COOKIE_NAME}=`);
+  return document.cookie.includes(`${ACCESS_TOKEN_COOKIE}=`);
 }
 
 export function AuthGuard({ children }: { children: ReactNode }) {
