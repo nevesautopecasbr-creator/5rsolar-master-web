@@ -267,7 +267,26 @@ export function DynamicForm({
       ...(isGet ? {} : { body: JSON.stringify(payload) }),
     });
     if (!response.ok) {
-      setStatus("Falha ao salvar");
+      // Exibe detalhes de validação/erro retornados pela API (NestJS costuma retornar { message, statusCode, error })
+      let msg: string | null = null;
+      try {
+        const err = await response.json();
+        const rawMessage = (err as any)?.message;
+        if (Array.isArray(rawMessage)) {
+          msg = rawMessage.join(" • ");
+        } else if (typeof rawMessage === "string") {
+          msg = rawMessage;
+        } else if (typeof (err as any)?.error === "string") {
+          msg = (err as any).error;
+        } else {
+          msg = null;
+        }
+      } catch {
+        // Body não é JSON
+      }
+
+      const fallback = response.statusText || `HTTP ${response.status}`;
+      setStatus(`Falha ao salvar: ${msg ?? fallback}`);
       return;
     }
     setStatus("Salvo com sucesso");
