@@ -10,11 +10,30 @@ const PAYABLE_FIELDS = [
   { name: "description", label: "Descrição", type: "text", required: true },
   { name: "amount", label: "Valor (R$)", type: "text", mask: "money" as const, required: true },
   { name: "dueDate", label: "Vencimento", type: "date", required: true },
-  { name: "projectId", label: "Projeto", type: "text", placeholder: "ID do projeto" },
-  { name: "supplierId", label: "Fornecedor", type: "text", placeholder: "ID do fornecedor" },
-  { name: "accountId", label: "Conta contábil", type: "text" },
-  { name: "status", label: "Status", type: "text", placeholder: "OPEN, PAID..." },
-  { name: "paymentMethod", label: "Forma de pagamento", type: "text" },
+  { name: "projectId", label: "Projeto", type: "select", optionsUrl: "/api/projects", optionValueKey: "id", optionLabelKey: "name" },
+  { name: "supplierId", label: "Fornecedor", type: "select", optionsUrl: "/api/suppliers", optionValueKey: "id", optionLabelKey: "name" },
+  { name: "accountId", label: "Conta contábil", type: "select", optionsUrl: "/api/chart-accounts", optionValueKey: "id", optionLabelKey: "name" },
+  {
+    name: "status",
+    label: "Status",
+    type: "select",
+    defaultValue: "EM_ABERTO",
+    options: [
+      { value: "EM_ABERTO", label: "Em aberto" },
+      { value: "PAGO", label: "Pago" },
+    ],
+  },
+  {
+    name: "paymentMethod",
+    label: "Forma de pagamento",
+    type: "select",
+    options: [
+      { value: "PIX", label: "PIX" },
+      { value: "CARTAO", label: "Cartão" },
+      { value: "BOLETO", label: "Boleto" },
+      { value: "DINHEIRO", label: "Dinheiro" },
+    ],
+  },
   { name: "isDirectCost", label: "Custo direto", type: "checkbox" },
 ];
 

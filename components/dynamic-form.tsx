@@ -33,6 +33,8 @@ export type FormField = {
   optionsUrl?: string;
   optionValueKey?: string;
   optionLabelKey?: string;
+  /** Para type "select": opções estáticas (quando não vier da API) */
+  options?: Array<{ value: string; label: string }>;
 };
 
 type DynamicFormProps = {
@@ -395,9 +397,9 @@ export function DynamicForm({
                     );
                   })}
                 </div>
-              ) : field.type === "select" && field.optionsUrl ? (
+              ) : field.type === "select" ? (
                 <>
-                  {selectLoading[field.name] ? (
+                  {field.optionsUrl && selectLoading[field.name] ? (
                     <div className="text-sm text-brand-navy-600">Carregando...</div>
                   ) : (
                     <select
@@ -408,7 +410,7 @@ export function DynamicForm({
                       }
                     >
                       <option value="">Selecione...</option>
-                      {(selectOptions[field.name] ?? []).map((opt) => (
+                      {((field.optionsUrl ? (selectOptions[field.name] ?? []) : (field.options ?? []))).map((opt) => (
                         <option key={opt.value} value={opt.value}>
                           {opt.label}
                         </option>
