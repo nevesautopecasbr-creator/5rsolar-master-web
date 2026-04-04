@@ -109,9 +109,16 @@ export default function TemplatesSettingsPage() {
     try {
       const endpoint = form.id ? `/api/document-templates/${form.id}` : "/api/document-templates";
       const method = form.id ? "PATCH" : "POST";
+      const body = {
+        name: form.name,
+        type: form.type,
+        content: form.content,
+        isActive: form.isActive,
+        isDefault: form.isDefault,
+      };
       const response = await apiFetch(endpoint, {
         method,
-        body: JSON.stringify(form),
+        body: JSON.stringify(body),
       });
       if (!response.ok) {
         setStatus("Não foi possível salvar o template.");
