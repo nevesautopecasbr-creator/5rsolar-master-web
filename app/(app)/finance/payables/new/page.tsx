@@ -19,10 +19,14 @@ export default function Page() {
           name: 'status',
           label: 'Status',
           type: 'select',
-          defaultValue: 'EM_ABERTO',
+          defaultValue: 'OPEN',
           options: [
-            { value: 'EM_ABERTO', label: 'Em aberto' },
-            { value: 'PAGO', label: 'Pago' },
+            { value: 'DRAFT', label: 'Rascunho' },
+            { value: 'OPEN', label: 'Em aberto' },
+            { value: 'APPROVED', label: 'Aprovado' },
+            { value: 'PAID', label: 'Pago' },
+            { value: 'OVERDUE', label: 'Vencido' },
+            { value: 'CANCELLED', label: 'Cancelado' },
           ],
         },
         {

@@ -182,7 +182,13 @@ export function DynamicForm({
       if (!field.optionsUrl) continue;
       setSelectLoading((prev) => ({ ...prev, [field.name]: true }));
       apiFetch(field.optionsUrl)
-        .then((r) => r.json())
+        .then(async (r) => {
+          if (!r.ok) {
+            throw new Error(`HTTP ${r.status} ao carregar opções: ${field.optionsUrl}`);
+          }
+          const data = (await r.json().catch(() => null)) as unknown;
+          return Array.isArray(data) ? data : ((data as any)?.items ?? []);
+        })
         .then((data: Array<Record<string, unknown>>) => {
           if (!isActive) return;
           const valKey = field.optionValueKey ?? "id";
@@ -193,7 +199,9 @@ export function DynamicForm({
           }));
           setSelectOptions((prev) => ({ ...prev, [field.name]: options }));
         })
-        .catch(() => {
+        .catch((err) => {
+          // Evita "select vazio sem explicação" (401/403/500 ou shape inesperado)
+          console.error(`[DynamicForm] Falha ao carregar opções para "${field.name}"`, err);
           if (isActive) setSelectOptions((prev) => ({ ...prev, [field.name]: [] }));
         })
         .finally(() => {

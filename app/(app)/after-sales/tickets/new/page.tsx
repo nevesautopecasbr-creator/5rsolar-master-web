@@ -8,13 +8,56 @@ export default function Page() {
       endpoint="/api/tickets"
       onSuccessRedirect="/after-sales/tickets"
       fields={[
-        { name: 'subject', label: 'Assunto', type: 'text' },
+        { name: 'subject', label: 'Assunto', type: 'text', required: true },
         { name: 'description', label: 'Descrição', type: 'text' },
-        { name: 'customerId', label: 'Cliente', type: 'text', placeholder: 'ID do cliente' },
-        { name: 'projectId', label: 'Projeto', type: 'text', placeholder: 'ID do projeto' },
-        { name: 'assignedToId', label: 'Responsável', type: 'text', placeholder: 'ID do usuário' },
-        { name: 'status', label: 'Status', type: 'text', placeholder: 'OPEN, IN_PROGRESS...' },
-        { name: 'priority', label: 'Prioridade', type: 'text', placeholder: 'LOW, MEDIUM, HIGH' },
+        {
+          name: 'customerId',
+          label: 'Cliente',
+          type: 'select',
+          optionsUrl: '/api/customers',
+          optionValueKey: 'id',
+          optionLabelKey: 'name',
+        },
+        {
+          name: 'projectId',
+          label: 'Projeto',
+          type: 'select',
+          optionsUrl: '/api/projects',
+          optionValueKey: 'id',
+          optionLabelKey: 'name',
+        },
+        {
+          name: 'assignedToId',
+          label: 'Responsável',
+          type: 'select',
+          optionsUrl: '/api/users',
+          optionValueKey: 'id',
+          optionLabelKey: 'name',
+        },
+        {
+          name: 'status',
+          label: 'Status',
+          type: 'select',
+          defaultValue: 'OPEN',
+          options: [
+            { value: 'OPEN', label: 'Aberto' },
+            { value: 'IN_PROGRESS', label: 'Em andamento' },
+            { value: 'RESOLVED', label: 'Resolvido' },
+            { value: 'CLOSED', label: 'Fechado' },
+          ],
+        },
+        {
+          name: 'priority',
+          label: 'Prioridade',
+          type: 'select',
+          defaultValue: 'MEDIUM',
+          options: [
+            { value: 'LOW', label: 'Baixa' },
+            { value: 'MEDIUM', label: 'Média' },
+            { value: 'HIGH', label: 'Alta' },
+            { value: 'URGENT', label: 'Urgente' },
+          ],
+        },
       ]}
     />
   );

@@ -19,7 +19,11 @@ type ConsumerUnit = { consumerUnitCode: string; currentConsumptionKwh: string };
 
 type CustomerFormProps = {
   /** Chamado após salvar com sucesso (ex: fechar modal e atualizar lista) */
-  onSuccess?: () => void;
+  onSuccess?: (customer?: {
+    id: string;
+    name: string;
+    consumerUnits?: Array<{ consumerUnitCode: string; currentConsumptionKwh: string | number | null }>;
+  }) => void;
   /** Chamado ao cancelar (ex: fechar modal) */
   onCancel?: () => void;
   /** Se true, não mostra título "Novo Cliente" e botão Cancelar leva a onCancel */
@@ -150,7 +154,26 @@ export function CustomerForm({ onSuccess, onCancel, inline }: CustomerFormProps)
     }
 
     setStatus("Cliente salvo com sucesso.");
-    onSuccess?.();
+
+    const created = (await response.json().catch(() => null)) as
+      | {
+          id?: string;
+          name?: string;
+          consumerUnits?: Array<{
+            consumerUnitCode?: string;
+            currentConsumptionKwh?: string | number | null;
+          }>;
+        }
+      | null;
+
+    onSuccess?.({
+      id: created?.id ?? "",
+      name: created?.name ?? "",
+      consumerUnits: created?.consumerUnits?.map((u) => ({
+        consumerUnitCode: String(u.consumerUnitCode ?? ""),
+        currentConsumptionKwh: (u.currentConsumptionKwh ?? null) as string | number | null,
+      })),
+    });
   }
 
   return (

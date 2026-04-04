@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
+import { CustomerForm } from "@/components/cadastros/customer-form";
 import { apiFetch } from "@/lib/api";
 import { maskMoney, maskMoneyFromNumber, parseMoney, maskDecimal } from "@/lib/masks";
 
@@ -50,6 +52,28 @@ export default function NewBudgetPage() {
   });
   const [budgetProducts, setBudgetProducts] = useState<BudgetProduct[]>([]);
 
+  type CustomerSuggestion = {
+    id: string;
+    name: string;
+    document?: string | null;
+    consumerUnits?: Array<{
+      consumerUnitCode: string;
+      currentConsumptionKwh: string | number | null;
+    }>;
+  };
+
+  const [customerModalOpen, setCustomerModalOpen] = useState(false);
+  const [customerQuery, setCustomerQuery] = useState("");
+  const [customerLoading, setCustomerLoading] = useState(false);
+  const [customerOpen, setCustomerOpen] = useState(false);
+  const [customerSuggestions, setCustomerSuggestions] = useState<CustomerSuggestion[]>([]);
+
+  useEffect(() => {
+    // manter o input sincronizado com o form ao iniciar/preencher via querystring
+    setCustomerQuery(form.customerName);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // Preencher a partir do simulador (query string)
   useEffect(() => {
     const q = searchParams.get("consumptionKwh");
@@ -74,6 +98,46 @@ export default function NewBudgetPage() {
       }));
     }
   }, [searchParams]);
+
+  // Busca clientes (autocomplete) conforme o usuário digita.
+  useEffect(() => {
+    const q = customerQuery.trim();
+    if (q.length < 2) {
+      setCustomerSuggestions([]);
+      setCustomerOpen(false);
+      return;
+    }
+
+    let active = true;
+    setCustomerLoading(true);
+    const t = setTimeout(() => {
+      apiFetch(`/api/customers?q=${encodeURIComponent(q)}`)
+        .then(async (r) => {
+          if (!r.ok) return [];
+          const data = (await r.json().catch(() => null)) as unknown;
+          return Array.isArray(data) ? data : [];
+        })
+        .then((list) => {
+          if (!active) return;
+          setCustomerSuggestions(list as CustomerSuggestion[]);
+          setCustomerOpen(true);
+        })
+        .catch(() => {
+          if (!active) return;
+          setCustomerSuggestions([]);
+          setCustomerOpen(false);
+        })
+        .finally(() => {
+          if (!active) return;
+          setCustomerLoading(false);
+        });
+    }, 300);
+
+    return () => {
+      active = false;
+      clearTimeout(t);
+    };
+  }, [customerQuery]);
 
   useEffect(() => {
     let mounted = true;
@@ -121,6 +185,22 @@ export default function NewBudgetPage() {
         return { ...p, [field]: value } as BudgetProduct;
       }),
     );
+  }
+
+  function applySelectedCustomer(customer?: CustomerSuggestion | null) {
+    if (!customer) return;
+    const firstUnit = customer.consumerUnits?.[0];
+    setForm((p) => ({
+      ...p,
+      customerName: customer.name,
+      consumerUnitCode: p.consumerUnitCode || String(firstUnit?.consumerUnitCode ?? ""),
+      consumptionKwh:
+        p.consumptionKwh ||
+        (firstUnit?.currentConsumptionKwh != null ? String(firstUnit.currentConsumptionKwh) : ""),
+    }));
+    setCustomerQuery(customer.name);
+    setCustomerOpen(false);
+    setCustomerSuggestions([]);
   }
 
   const labor = parseMoney(form.laborCost);
@@ -183,13 +263,14 @@ export default function NewBudgetPage() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="mx-auto max-w-3xl space-y-8">
-      <div>
-        <h1 className="text-xl font-semibold text-brand-navy-900">Novo Orçamento</h1>
-        <p className="mt-1 text-sm text-brand-navy-600">
-          Fluxo em etapas: projeto e proposta, produtos e revisão.
-        </p>
-      </div>
+    <>
+      <form onSubmit={handleSubmit} className="mx-auto max-w-3xl space-y-8">
+        <div>
+          <h1 className="text-xl font-semibold text-brand-navy-900">Novo Orçamento</h1>
+          <p className="mt-1 text-sm text-brand-navy-600">
+            Fluxo em etapas: projeto e proposta, produtos e revisão.
+          </p>
+        </div>
 
       {/* Stepper */}
       <nav aria-label="Etapas do orçamento" className="flex items-center gap-2">
@@ -229,12 +310,60 @@ export default function NewBudgetPage() {
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="customerName">Cliente</Label>
-                <Input
-                  id="customerName"
-                  value={form.customerName}
-                  onChange={(e) => setForm((p) => ({ ...p, customerName: e.target.value }))}
-                  placeholder="Nome do cliente"
-                />
+                <div className="flex items-start gap-2">
+                  <div className="relative w-full">
+                    <Input
+                      id="customerName"
+                      value={customerQuery}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        setCustomerQuery(v);
+                        setForm((p) => ({ ...p, customerName: v }));
+                      }}
+                      onFocus={() => {
+                        if (customerSuggestions.length > 0) setCustomerOpen(true);
+                      }}
+                      onBlur={() => {
+                        // fecha após clique nas opções (mouseDown) sem "sumir" antes do select
+                        window.setTimeout(() => setCustomerOpen(false), 150);
+                      }}
+                      placeholder="Digite para buscar (mín. 2 letras)"
+                    />
+                    {customerLoading ? (
+                      <div className="mt-1 text-xs text-brand-navy-500">Buscando...</div>
+                    ) : null}
+                    {customerOpen && customerSuggestions.length > 0 ? (
+                      <div className="absolute z-10 mt-2 w-full overflow-hidden rounded-md border border-brand-navy-200 bg-white shadow-lg">
+                        {customerSuggestions.map((c) => (
+                          <button
+                            key={c.id}
+                            type="button"
+                            className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm text-brand-navy-800 hover:bg-brand-navy-50"
+                            onMouseDown={(e) => {
+                              e.preventDefault();
+                              applySelectedCustomer(c);
+                            }}
+                          >
+                            <span className="truncate">{c.name}</span>
+                            {c.document ? (
+                              <span className="shrink-0 text-xs text-brand-navy-500">
+                                {c.document}
+                              </span>
+                            ) : null}
+                          </button>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="h-11 shrink-0"
+                    onClick={() => setCustomerModalOpen(true)}
+                  >
+                    Novo cliente
+                  </Button>
+                </div>
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="consumerUnitCode">Unidade consumidora (UC)</Label>
@@ -566,6 +695,32 @@ export default function NewBudgetPage() {
           </Link>
         </div>
       )}
-    </form>
+
+      <Modal
+        open={customerModalOpen}
+        onClose={() => setCustomerModalOpen(false)}
+        title="Novo Cliente"
+        description="Cadastre o cliente e as unidades consumidoras para continuar."
+        size="xl"
+      >
+        <CustomerForm
+          inline
+          onCancel={() => setCustomerModalOpen(false)}
+          onSuccess={(created) => {
+            setCustomerModalOpen(false);
+            if (!created?.id || !created?.name) return;
+            applySelectedCustomer({
+              id: created.id,
+              name: created.name,
+              consumerUnits: created.consumerUnits?.map((u) => ({
+                consumerUnitCode: u.consumerUnitCode,
+                currentConsumptionKwh: u.currentConsumptionKwh,
+              })),
+            });
+          }}
+        />
+      </Modal>
+      </form>
+    </>
   );
 }

@@ -53,11 +53,11 @@ export function Topbar() {
         <Button
           variant="ghost"
           type="button"
-          className="h-9 w-9 p-0 text-brand-navy-500 hover:bg-brand-navy-50 hover:text-brand-navy-700"
+          className="h-9 w-9 p-0 text-brand-navy-700 hover:bg-brand-navy-50 hover:text-brand-navy-900"
           aria-label="Pesquisar"
           onClick={() => setSearchOpen((o) => !o)}
         >
-          <IconSearch className="h-5 w-5" />
+          <IconSearch className="h-5 w-5 text-brand-navy-700" />
         </Button>
         <Button
           variant="ghost"
@@ -66,7 +66,7 @@ export function Topbar() {
           aria-label="Notificações"
           onClick={() => setNotificationsOpen(true)}
         >
-          <IconBell className="h-5 w-5" />
+          <IconBell className="h-5 w-5 text-brand-navy-700" />
           <span className="absolute right-1 top-1 h-2 w-2 rounded-full bg-red-500" aria-hidden />
         </Button>
         <Button
@@ -76,7 +76,7 @@ export function Topbar() {
           aria-label="Ajuda"
           onClick={() => setHelpOpen(true)}
         >
-          <IconHelp className="h-5 w-5" />
+          <IconHelp className="h-5 w-5 text-brand-navy-700" />
         </Button>
         <div className="ml-1 h-8 w-px bg-brand-navy-200" />
         <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-orange text-sm font-semibold text-white">

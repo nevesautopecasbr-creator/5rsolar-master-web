@@ -29,24 +29,46 @@ export function DataPage({
   mapRow,
 }: DataPageProps) {
   const [rows, setRows] = useState<Array<Record<string, string>>>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   useEffect(() => {
     let mounted = true;
+    setLoadError(null);
     apiFetch(endpoint)
-      .then((response) => response.json())
+      .then(async (response) => {
+        if (!response.ok) {
+          const err = await response.json().catch(() => ({}));
+          const msg =
+            typeof (err as { message?: unknown }).message === "string"
+              ? (err as { message: string }).message
+              : response.statusText;
+          throw new Error(msg || `HTTP ${response.status}`);
+        }
+        return response.json();
+      })
       .then((data) => {
         if (!mounted) return;
         const list = Array.isArray(data) ? data : data?.items ?? [];
         setRows(list.map(mapRow));
       })
-      .catch(() => setRows([]));
+      .catch((e) => {
+        if (!mounted) return;
+        setRows([]);
+        setLoadError(e instanceof Error ? e.message : "Falha ao carregar dados.");
+      });
     return () => {
       mounted = false;
     };
   }, [endpoint, mapRow]);
 
   return (
-    <DataTable
+    <>
+      {loadError ? (
+        <p className="mb-4 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800">
+          {loadError}
+        </p>
+      ) : null}
+      <DataTable
       title={title}
       description={description}
       newHref={newHref}
@@ -56,5 +78,6 @@ export function DataPage({
       columns={columns}
       rows={rows}
     />
+    </>
   );
 }

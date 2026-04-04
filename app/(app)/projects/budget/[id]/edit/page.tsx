@@ -7,6 +7,8 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Modal } from "@/components/ui/modal";
+import { CustomerForm } from "@/components/cadastros/customer-form";
 import { apiFetch } from "@/lib/api";
 import { maskMoney, maskMoneyFromNumber, parseMoney } from "@/lib/masks";
 
@@ -41,6 +43,61 @@ export default function EditBudgetPage() {
   const [proposalPdfUrl, setProposalPdfUrl] = useState<string | null>(null);
   const [generatingPdf, setGeneratingPdf] = useState(false);
 
+  type CustomerSuggestion = {
+    id: string;
+    name: string;
+    document?: string | null;
+    consumerUnits?: Array<{
+      consumerUnitCode: string;
+      currentConsumptionKwh: string | number | null;
+    }>;
+  };
+
+  const [customerModalOpen, setCustomerModalOpen] = useState(false);
+  const [customerQuery, setCustomerQuery] = useState("");
+  const [customerLoading, setCustomerLoading] = useState(false);
+  const [customerOpen, setCustomerOpen] = useState(false);
+  const [customerSuggestions, setCustomerSuggestions] = useState<CustomerSuggestion[]>([]);
+
+  useEffect(() => {
+    const q = customerQuery.trim();
+    if (q.length < 2) {
+      setCustomerSuggestions([]);
+      setCustomerOpen(false);
+      return;
+    }
+
+    let active = true;
+    setCustomerLoading(true);
+    const t = setTimeout(() => {
+      apiFetch(`/api/customers?q=${encodeURIComponent(q)}`)
+        .then(async (r) => {
+          if (!r.ok) return [];
+          const data = (await r.json().catch(() => null)) as unknown;
+          return Array.isArray(data) ? data : [];
+        })
+        .then((list) => {
+          if (!active) return;
+          setCustomerSuggestions(list as CustomerSuggestion[]);
+          setCustomerOpen(true);
+        })
+        .catch(() => {
+          if (!active) return;
+          setCustomerSuggestions([]);
+          setCustomerOpen(false);
+        })
+        .finally(() => {
+          if (!active) return;
+          setCustomerLoading(false);
+        });
+    }, 300);
+
+    return () => {
+      active = false;
+      clearTimeout(t);
+    };
+  }, [customerQuery]);
+
   useEffect(() => {
     let mounted = true;
     Promise.all([
@@ -50,8 +107,9 @@ export default function EditBudgetPage() {
       .then(([prods, budget]) => {
         if (!mounted) return;
         setProducts(Array.isArray(prods) ? prods.filter((p: Product) => p.id) : []);
+        const name = budget.customerName ?? "";
         setForm({
-          customerName: budget.customerName ?? "",
+          customerName: name,
           consumptionKwh: budget.consumptionKwh != null ? String(budget.consumptionKwh) : "",
           consumerUnitCode: budget.consumerUnitCode ?? "",
           systemPowerKwp: budget.systemPowerKwp != null ? String(budget.systemPowerKwp) : "",
@@ -64,6 +122,7 @@ export default function EditBudgetPage() {
           otherCosts: budget.otherCosts != null ? maskMoneyFromNumber(Number(budget.otherCosts)) : "0,00",
           notes: budget.notes ?? "",
         });
+        setCustomerQuery(name);
         setProposalPdfUrl(budget.proposalPdfUrl ?? null);
         const used = budget.productsUsed;
         if (Array.isArray(used) && used.length > 0) {
@@ -115,6 +174,22 @@ export default function EditBudgetPage() {
         return { ...p, [field]: value } as BudgetProduct;
       }),
     );
+  }
+
+  function applySelectedCustomer(customer?: CustomerSuggestion | null) {
+    if (!customer) return;
+    const firstUnit = customer.consumerUnits?.[0];
+    setForm((p) => ({
+      ...p,
+      customerName: customer.name,
+      consumerUnitCode: p.consumerUnitCode || String(firstUnit?.consumerUnitCode ?? ""),
+      consumptionKwh:
+        p.consumptionKwh ||
+        (firstUnit?.currentConsumptionKwh != null ? String(firstUnit.currentConsumptionKwh) : ""),
+    }));
+    setCustomerQuery(customer.name);
+    setCustomerOpen(false);
+    setCustomerSuggestions([]);
   }
 
   const labor = parseMoney(form.laborCost);
@@ -196,6 +271,7 @@ export default function EditBudgetPage() {
   }
 
   return (
+    <>
     <form onSubmit={handleSubmit} className="mx-auto max-w-3xl space-y-8">
       <div>
         <h1 className="text-xl font-semibold text-brand-navy-900">Editar Orçamento</h1>
@@ -215,12 +291,57 @@ export default function EditBudgetPage() {
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="customerName">Cliente</Label>
-              <Input
-                id="customerName"
-                value={form.customerName}
-                onChange={(e) => setForm((p) => ({ ...p, customerName: e.target.value }))}
-                placeholder="Nome do cliente"
-              />
+              <div className="flex items-start gap-2">
+                <div className="relative w-full">
+                  <Input
+                    id="customerName"
+                    value={customerQuery}
+                    onChange={(e) => {
+                      const v = e.target.value;
+                      setCustomerQuery(v);
+                      setForm((p) => ({ ...p, customerName: v }));
+                    }}
+                    onFocus={() => {
+                      if (customerSuggestions.length > 0) setCustomerOpen(true);
+                    }}
+                    onBlur={() => {
+                      window.setTimeout(() => setCustomerOpen(false), 150);
+                    }}
+                    placeholder="Digite para buscar (mín. 2 letras)"
+                  />
+                  {customerLoading ? (
+                    <div className="mt-1 text-xs text-brand-navy-500">Buscando...</div>
+                  ) : null}
+                  {customerOpen && customerSuggestions.length > 0 ? (
+                    <div className="absolute z-10 mt-2 w-full overflow-hidden rounded-md border border-brand-navy-200 bg-white shadow-lg">
+                      {customerSuggestions.map((c) => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm text-brand-navy-800 hover:bg-brand-navy-50"
+                          onMouseDown={(e) => {
+                            e.preventDefault();
+                            applySelectedCustomer(c);
+                          }}
+                        >
+                          <span className="truncate">{c.name}</span>
+                          {c.document ? (
+                            <span className="shrink-0 text-xs text-brand-navy-500">{c.document}</span>
+                          ) : null}
+                        </button>
+                      ))}
+                    </div>
+                  ) : null}
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="h-11 shrink-0"
+                  onClick={() => setCustomerModalOpen(true)}
+                >
+                  Novo cliente
+                </Button>
+              </div>
             </div>
             <div className="grid gap-2">
               <Label htmlFor="consumerUnitCode">Unidade consumidora (UC)</Label>
@@ -477,5 +598,30 @@ export default function EditBudgetPage() {
         </Link>
       </div>
     </form>
+    <Modal
+      open={customerModalOpen}
+      onClose={() => setCustomerModalOpen(false)}
+      title="Novo Cliente"
+      description="Cadastre o cliente e as unidades consumidoras para continuar."
+      size="xl"
+    >
+      <CustomerForm
+        inline
+        onCancel={() => setCustomerModalOpen(false)}
+        onSuccess={(created) => {
+          setCustomerModalOpen(false);
+          if (!created?.id || !created?.name) return;
+          applySelectedCustomer({
+            id: created.id,
+            name: created.name,
+            consumerUnits: created.consumerUnits?.map((u) => ({
+              consumerUnitCode: u.consumerUnitCode,
+              currentConsumptionKwh: u.currentConsumptionKwh,
+            })),
+          });
+        }}
+      />
+    </Modal>
+    </>
   );
 }

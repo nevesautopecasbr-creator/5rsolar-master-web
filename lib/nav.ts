@@ -58,4 +58,8 @@ export const navSections: NavSection[] = [
       { label: "Garantias", href: "/after-sales/warranties" },
     ],
   },
+  {
+    title: "Configurações",
+    items: [{ label: "Templates", href: "/settings/templates" }],
+  },
 ];

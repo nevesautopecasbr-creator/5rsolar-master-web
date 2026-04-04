@@ -8,9 +8,29 @@ export default function Page() {
       endpoint="/api/purchase-requests"
       onSuccessRedirect="/purchases/requests"
       fields={[
-        { name: 'title', label: 'Título', type: 'text' },
-        { name: 'projectId', label: 'Projeto', type: 'text', placeholder: 'ID do projeto' },
-        { name: 'status', label: 'Status', type: 'text', placeholder: 'OPEN, APPROVED...' },
+        { name: 'title', label: 'Título', type: 'text', required: true },
+        {
+          name: 'projectId',
+          label: 'Projeto',
+          type: 'select',
+          optionsUrl: '/api/projects',
+          optionValueKey: 'id',
+          optionLabelKey: 'name',
+        },
+        {
+          name: 'status',
+          label: 'Status',
+          type: 'select',
+          defaultValue: 'DRAFT',
+          options: [
+            { value: 'DRAFT', label: 'Rascunho' },
+            { value: 'PENDING', label: 'Pendente' },
+            { value: 'APPROVED', label: 'Aprovado' },
+            { value: 'ORDERED', label: 'Pedido emitido' },
+            { value: 'RECEIVED', label: 'Recebido' },
+            { value: 'CANCELLED', label: 'Cancelado' },
+          ],
+        },
         { name: 'notes', label: 'Observações', type: 'text' },
       ]}
     />

@@ -7,13 +7,45 @@ import { DynamicForm } from "@/components/dynamic-form";
 import { formatAmountFromApi } from "@/lib/masks";
 
 const CASH_MOVEMENT_FIELDS = [
-  { name: "cashAccountId", label: "Conta caixa", type: "text", required: true },
-  { name: "direction", label: "Direção", type: "text", placeholder: "IN ou OUT", required: true },
-  { name: "amount", label: "Valor (R$)", type: "text", mask: "money" as const, required: true },
-  { name: "movementDate", label: "Data", type: "date", required: true },
-  { name: "description", label: "Descrição", type: "text" },
-  { name: "projectId", label: "Projeto", type: "text" },
-  { name: "accountId", label: "Conta contábil", type: "text" },
+  {
+    name: "cashAccountId",
+    label: "Conta caixa",
+    type: "select" as const,
+    optionsUrl: "/api/cash-accounts",
+    optionValueKey: "id",
+    optionLabelKey: "name",
+    required: true,
+  },
+  {
+    name: "direction",
+    label: "Direção",
+    type: "select" as const,
+    defaultValue: "IN",
+    required: true,
+    options: [
+      { value: "IN", label: "Entrada" },
+      { value: "OUT", label: "Saída" },
+    ],
+  },
+  { name: "amount", label: "Valor (R$)", type: "text" as const, mask: "money" as const, required: true },
+  { name: "movementDate", label: "Data", type: "date" as const, required: true },
+  { name: "description", label: "Descrição", type: "text" as const },
+  {
+    name: "projectId",
+    label: "Projeto",
+    type: "select" as const,
+    optionsUrl: "/api/projects",
+    optionValueKey: "id",
+    optionLabelKey: "name",
+  },
+  {
+    name: "accountId",
+    label: "Conta contábil",
+    type: "select" as const,
+    optionsUrl: "/api/chart-accounts",
+    optionValueKey: "id",
+    optionLabelKey: "name",
+  },
 ];
 
 export default function Page() {

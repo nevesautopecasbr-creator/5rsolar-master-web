@@ -7,16 +7,60 @@ import { DynamicForm } from "@/components/dynamic-form";
 import { formatAmountFromApi } from "@/lib/masks";
 
 const RECEIVABLE_FIELDS = [
-  { name: "description", label: "Descrição", type: "text", required: true },
-  { name: "amount", label: "Valor (R$)", type: "text", mask: "money" as const, required: true },
-  { name: "dueDate", label: "Vencimento", type: "date", required: true },
-  { name: "projectId", label: "Projeto", type: "text", placeholder: "ID do projeto" },
-  { name: "customerId", label: "Cliente", type: "text", placeholder: "ID do cliente" },
-  { name: "accountId", label: "Conta contábil", type: "text" },
-  { name: "status", label: "Status", type: "text", placeholder: "OPEN, RECEIVED..." },
-  { name: "paymentMethod", label: "Forma de pagamento", type: "text" },
-  { name: "installmentNo", label: "Parcela", type: "text", mask: "number" as const },
-  { name: "totalInstallments", label: "Total parcelas", type: "text", mask: "number" as const },
+  { name: "description", label: "Descrição", type: "text" as const, required: true },
+  { name: "amount", label: "Valor (R$)", type: "text" as const, mask: "money" as const, required: true },
+  { name: "dueDate", label: "Vencimento", type: "date" as const, required: true },
+  {
+    name: "projectId",
+    label: "Projeto",
+    type: "select" as const,
+    optionsUrl: "/api/projects",
+    optionValueKey: "id",
+    optionLabelKey: "name",
+  },
+  {
+    name: "customerId",
+    label: "Cliente",
+    type: "select" as const,
+    optionsUrl: "/api/customers",
+    optionValueKey: "id",
+    optionLabelKey: "name",
+  },
+  { name: "contractId", label: "Contrato", type: "text" as const, placeholder: "ID do contrato" },
+  {
+    name: "accountId",
+    label: "Conta contábil",
+    type: "select" as const,
+    optionsUrl: "/api/chart-accounts",
+    optionValueKey: "id",
+    optionLabelKey: "name",
+  },
+  {
+    name: "status",
+    label: "Status",
+    type: "select" as const,
+    defaultValue: "OPEN",
+    options: [
+      { value: "OPEN", label: "Em aberto" },
+      { value: "PAID", label: "Pago" },
+      { value: "OVERDUE", label: "Vencido" },
+      { value: "CANCELLED", label: "Cancelado" },
+    ],
+  },
+  {
+    name: "paymentMethod",
+    label: "Forma de pagamento",
+    type: "select" as const,
+    options: [
+      { value: "PIX", label: "PIX" },
+      { value: "CARTAO", label: "Cartão" },
+      { value: "BOLETO", label: "Boleto" },
+      { value: "DINHEIRO", label: "Dinheiro" },
+    ],
+  },
+  { name: "receivedAt", label: "Recebido em", type: "date" as const },
+  { name: "installmentNo", label: "Parcela", type: "text" as const, mask: "number" as const },
+  { name: "totalInstallments", label: "Total parcelas", type: "text" as const, mask: "number" as const },
 ];
 
 export default function Page() {
