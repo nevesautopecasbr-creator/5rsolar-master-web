@@ -5,6 +5,8 @@ import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Link from "@tiptap/extension-link";
 import Image from "@tiptap/extension-image";
+import Underline from "@tiptap/extension-underline";
+import TextAlign from "@tiptap/extension-text-align";
 import { Button } from "@/components/ui/button";
 import { apiFetch } from "@/lib/api";
 
@@ -54,6 +56,8 @@ export function TemplateEditor({ value, onChange, variables }: Props) {
       StarterKit,
       Link.configure({ openOnClick: true, autolink: true }),
       Image.configure({ inline: true }),
+      Underline,
+      TextAlign.configure({ types: ["heading", "paragraph"] }),
     ],
     content: value || "<p></p>",
     onUpdate: ({ editor: currentEditor }) => {
@@ -118,17 +122,134 @@ export function TemplateEditor({ value, onChange, variables }: Props) {
     }
   }
 
+  function toggleLink() {
+    if (!editor) return;
+    const previousUrl = editor.getAttributes("link").href as string | undefined;
+    const url = window.prompt("Informe a URL do link", previousUrl ?? "https://");
+    if (url === null) return;
+    if (url.trim() === "") {
+      editor.chain().focus().extendMarkRange("link").unsetLink().run();
+      return;
+    }
+    editor
+      .chain()
+      .focus()
+      .extendMarkRange("link")
+      .setLink({ href: url.trim() })
+      .run();
+  }
+
+  function isActive(name: "bold" | "italic" | "underline" | "bulletList" | "orderedList" | "blockquote" | "codeBlock" | "heading" | "paragraph", attrs?: Record<string, unknown>) {
+    if (!editor) return false;
+    return editor.isActive(name, attrs);
+  }
+
   return (
     <div className="grid gap-2">
       <div className="flex flex-wrap items-center gap-2 rounded-md border border-brand-navy-200 bg-brand-navy-50 p-2">
-        <Button type="button" variant="outline" className="h-8" onClick={() => editor?.chain().focus().toggleBold().run()}>
+        <Button
+          type="button"
+          variant="outline"
+          className={`h-8 ${isActive("paragraph") ? "border-brand-orange text-brand-orange" : ""}`}
+          onClick={() => editor?.chain().focus().setParagraph().run()}
+        >
+          Parágrafo
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          className={`h-8 ${isActive("heading", { level: 1 }) ? "border-brand-orange text-brand-orange" : ""}`}
+          onClick={() => editor?.chain().focus().toggleHeading({ level: 1 }).run()}
+        >
+          Título 1
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          className={`h-8 ${isActive("heading", { level: 2 }) ? "border-brand-orange text-brand-orange" : ""}`}
+          onClick={() => editor?.chain().focus().toggleHeading({ level: 2 }).run()}
+        >
+          Título 2
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          className={`h-8 ${isActive("bold") ? "border-brand-orange text-brand-orange" : ""}`}
+          onClick={() => editor?.chain().focus().toggleBold().run()}
+        >
           Negrito
         </Button>
-        <Button type="button" variant="outline" className="h-8" onClick={() => editor?.chain().focus().toggleItalic().run()}>
+        <Button
+          type="button"
+          variant="outline"
+          className={`h-8 ${isActive("italic") ? "border-brand-orange text-brand-orange" : ""}`}
+          onClick={() => editor?.chain().focus().toggleItalic().run()}
+        >
           Itálico
         </Button>
-        <Button type="button" variant="outline" className="h-8" onClick={() => editor?.chain().focus().toggleBulletList().run()}>
+        <Button
+          type="button"
+          variant="outline"
+          className={`h-8 ${isActive("underline") ? "border-brand-orange text-brand-orange" : ""}`}
+          onClick={() => editor?.chain().focus().toggleUnderline().run()}
+        >
+          Sublinhado
+        </Button>
+        <Button type="button" variant="outline" className="h-8" onClick={toggleLink}>
+          Link
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          className={`h-8 ${isActive("bulletList") ? "border-brand-orange text-brand-orange" : ""}`}
+          onClick={() => editor?.chain().focus().toggleBulletList().run()}
+        >
           Lista
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          className={`h-8 ${isActive("orderedList") ? "border-brand-orange text-brand-orange" : ""}`}
+          onClick={() => editor?.chain().focus().toggleOrderedList().run()}
+        >
+          Lista num.
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          className={`h-8 ${isActive("blockquote") ? "border-brand-orange text-brand-orange" : ""}`}
+          onClick={() => editor?.chain().focus().toggleBlockquote().run()}
+        >
+          Citação
+        </Button>
+        <Button
+          type="button"
+          variant="outline"
+          className={`h-8 ${isActive("codeBlock") ? "border-brand-orange text-brand-orange" : ""}`}
+          onClick={() => editor?.chain().focus().toggleCodeBlock().run()}
+        >
+          Bloco código
+        </Button>
+        <Button type="button" variant="outline" className="h-8" onClick={() => editor?.chain().focus().setTextAlign("left").run()}>
+          Esq
+        </Button>
+        <Button type="button" variant="outline" className="h-8" onClick={() => editor?.chain().focus().setTextAlign("center").run()}>
+          Centro
+        </Button>
+        <Button type="button" variant="outline" className="h-8" onClick={() => editor?.chain().focus().setTextAlign("right").run()}>
+          Dir
+        </Button>
+        <Button type="button" variant="outline" className="h-8" onClick={() => editor?.chain().focus().setTextAlign("justify").run()}>
+          Justificar
+        </Button>
+        <Button type="button" variant="outline" className="h-8" onClick={() => editor?.chain().focus().setHorizontalRule().run()}>
+          Linha
+        </Button>
+        <Button type="button" variant="outline" className="h-8" onClick={() => editor?.chain().focus().undo().run()}>
+          Desfazer
+        </Button>
+        <Button type="button" variant="outline" className="h-8" onClick={() => editor?.chain().focus().redo().run()}>
+          Refazer
         </Button>
         <Button type="button" variant="outline" className="h-8" onClick={() => insertPlaceholder("{{customerName}}")}>
           Inserir variável
@@ -149,7 +270,21 @@ export function TemplateEditor({ value, onChange, variables }: Props) {
       </div>
 
       <div className="relative rounded-md border border-brand-navy-300 bg-white p-3">
-        <EditorContent editor={editor} className="min-h-[280px] [&_.ProseMirror]:min-h-[260px] [&_.ProseMirror]:outline-none" />
+        <EditorContent
+          editor={editor}
+          className={[
+            "min-h-[320px]",
+            "[&_.ProseMirror]:min-h-[300px]",
+            "[&_.ProseMirror]:outline-none",
+            "[&_.ProseMirror]:leading-7",
+            "[&_.ProseMirror_h1]:text-2xl [&_.ProseMirror_h1]:font-bold [&_.ProseMirror_h1]:mb-3",
+            "[&_.ProseMirror_h2]:text-xl [&_.ProseMirror_h2]:font-semibold [&_.ProseMirror_h2]:mb-2",
+            "[&_.ProseMirror_p]:mb-3",
+            "[&_.ProseMirror_ul]:list-disc [&_.ProseMirror_ul]:pl-6 [&_.ProseMirror_ul]:mb-3",
+            "[&_.ProseMirror_ol]:list-decimal [&_.ProseMirror_ol]:pl-6 [&_.ProseMirror_ol]:mb-3",
+            "[&_.ProseMirror_blockquote]:border-l-4 [&_.ProseMirror_blockquote]:border-brand-navy-300 [&_.ProseMirror_blockquote]:pl-3 [&_.ProseMirror_blockquote]:italic",
+          ].join(" ")}
+        />
         {autocomplete.open && filteredVariables.length > 0 ? (
           <div className="absolute left-3 top-3 z-10 w-[320px] rounded-md border border-brand-navy-200 bg-white shadow-lg">
             {filteredVariables.map((item) => (
