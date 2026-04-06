@@ -46,7 +46,7 @@ function NewContractForm() {
   const searchParams = useSearchParams();
   const projectIdFromUrl = searchParams.get("projectId");
   const [projects, setProjects] = useState<Array<{ id: string; name: string }>>([]);
-  const [templates, setTemplates] = useState<Array<{ id: string; name: string }>>([]);
+  const [templates, setTemplates] = useState<Array<{ id: string; name: string; isActive?: boolean }>>([]);
   const [context, setContext] = useState<ContractContext | null>(null);
   const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState<string | null>(null);
@@ -54,7 +54,6 @@ function NewContractForm() {
     projectId: "",
     customerId: "",
     totalValue: "",
-    templateId: "",
     status: "DRAFT",
     notes: "",
     installmentsCount: "",
@@ -68,7 +67,7 @@ function NewContractForm() {
     const load = async () => {
       const [projectsRes, templatesRes] = await Promise.all([
         apiFetch("/api/projects").then((r) => r.json()),
-        apiFetch("/api/contract-templates").then((r) => r.json()),
+        apiFetch("/api/document-templates?type=CONTRACT").then((r) => r.json()),
       ]);
       if (!mounted) return;
       setProjects(Array.isArray(projectsRes) ? projectsRes : []);
@@ -151,7 +150,6 @@ function NewContractForm() {
       projectId: form.projectId,
       customerId: form.customerId,
       totalValue,
-      templateId: form.templateId || undefined,
       status: form.status,
       notes: form.notes.trim() || undefined,
       installmentsCount: form.installmentsCount ? Number(form.installmentsCount) : undefined,
@@ -273,20 +271,24 @@ function NewContractForm() {
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="templateId">Modelo de contrato</Label>
-            <select
-              id="templateId"
-              className="flex h-10 w-full rounded-md border border-brand-navy-300 bg-white px-3 py-2 text-sm"
-              value={form.templateId}
-              onChange={(e) => setForm((p) => ({ ...p, templateId: e.target.value }))}
-            >
-              <option value="">Nenhum</option>
-              {templates.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
+            <Label>Templates de contrato (Configurações)</Label>
+            <div className="rounded-lg border border-brand-navy-100 bg-brand-navy-50/50 p-3 text-sm text-brand-navy-700">
+              {templates.length > 0 ? (
+                <ul className="space-y-1">
+                  {templates.map((t) => (
+                    <li key={t.id}>
+                      {t.name}
+                      {t.isActive ? " (ativo)" : ""}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>Nenhum template de contrato cadastrado em Configurações &gt; Templates.</p>
+              )}
+              <p className="mt-2 text-xs text-brand-navy-500">
+                O PDF é gerado com base no template ativo.
+              </p>
+            </div>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="status">Status</Label>

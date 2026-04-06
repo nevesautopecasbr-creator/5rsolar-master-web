@@ -18,12 +18,11 @@ export default function EditContractPage() {
   const [status, setStatus] = useState<string | null>(null);
   const [projects, setProjects] = useState<Array<{ id: string; name: string }>>([]);
   const [customers, setCustomers] = useState<Array<{ id: string; name: string }>>([]);
-  const [templates, setTemplates] = useState<Array<{ id: string; name: string }>>([]);
+  const [templates, setTemplates] = useState<Array<{ id: string; name: string; isActive?: boolean }>>([]);
   const [form, setForm] = useState({
     projectId: "",
     customerId: "",
     totalValue: "",
-    templateId: "",
     status: "DRAFT",
     notes: "",
   });
@@ -34,7 +33,7 @@ export default function EditContractPage() {
       apiFetch(`/api/contracts/${id}`).then((r) => r.json()),
       apiFetch("/api/projects").then((r) => r.json()),
       apiFetch("/api/customers").then((r) => r.json()),
-      apiFetch("/api/contract-templates").then((r) => r.json()),
+      apiFetch("/api/document-templates?type=CONTRACT").then((r) => r.json()),
     ])
       .then(([contract, projectsData, customersData, templatesData]) => {
         if (!mounted) return;
@@ -48,7 +47,6 @@ export default function EditContractPage() {
             contract.totalValue != null
               ? maskMoneyFromNumber(Number(contract.totalValue))
               : "0,00",
-          templateId: contract.templateId ?? "",
           status: contract.status ?? "DRAFT",
           notes: contract.notes ?? "",
         });
@@ -70,7 +68,6 @@ export default function EditContractPage() {
       projectId: form.projectId,
       customerId: form.customerId,
       totalValue,
-      templateId: form.templateId || undefined,
       status: form.status,
       notes: form.notes.trim() || undefined,
     };
@@ -158,20 +155,24 @@ export default function EditContractPage() {
             />
           </div>
           <div className="grid gap-2">
-            <Label htmlFor="templateId">Modelo de contrato</Label>
-            <select
-              id="templateId"
-              className="flex h-10 w-full rounded-md border border-brand-navy-300 bg-white px-3 py-2 text-sm"
-              value={form.templateId}
-              onChange={(e) => setForm((p) => ({ ...p, templateId: e.target.value }))}
-            >
-              <option value="">Nenhum</option>
-              {templates.map((t) => (
-                <option key={t.id} value={t.id}>
-                  {t.name}
-                </option>
-              ))}
-            </select>
+            <Label>Templates de contrato (Configurações)</Label>
+            <div className="rounded-lg border border-brand-navy-100 bg-brand-navy-50/50 p-3 text-sm text-brand-navy-700">
+              {templates.length > 0 ? (
+                <ul className="space-y-1">
+                  {templates.map((t) => (
+                    <li key={t.id}>
+                      {t.name}
+                      {t.isActive ? " (ativo)" : ""}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p>Nenhum template de contrato cadastrado em Configurações &gt; Templates.</p>
+              )}
+              <p className="mt-2 text-xs text-brand-navy-500">
+                O PDF é gerado com base no template ativo.
+              </p>
+            </div>
           </div>
           <div className="grid gap-2">
             <Label htmlFor="status">Status</Label>
