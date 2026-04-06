@@ -6,6 +6,11 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { IconSearch } from "@/components/icons/solar-icons";
 
+export type RowAction = {
+  label: string;
+  onClick: (rowId: string) => void | Promise<void>;
+};
+
 type DataTableProps = {
   title: string;
   description: string;
@@ -15,7 +20,10 @@ type DataTableProps = {
   onNewClick?: () => void;
   searchPlaceholder?: string;
   columns: Array<{ key: string; label: string }>;
+  /** Inclua `__rowId` no mapRow para usar rowActions (não aparece como coluna). */
   rows: Array<Record<string, string>>;
+  /** Botões por linha; recebem o valor de `__rowId`. */
+  rowActions?: RowAction[];
 };
 
 export function DataTable({
@@ -27,6 +35,7 @@ export function DataTable({
   searchPlaceholder,
   columns,
   rows,
+  rowActions,
 }: DataTableProps) {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -38,7 +47,10 @@ export function DataTable({
     if (!search.trim()) return rows;
     const q = search.trim().toLowerCase();
     return rows.filter((row) =>
-      Object.values(row).some((v) => String(v).toLowerCase().includes(q)),
+      Object.entries(row).some(([key, v]) => {
+        if (key.startsWith("__")) return false;
+        return String(v).toLowerCase().includes(q);
+      }),
     );
   }, [rows, search]);
 
@@ -151,13 +163,16 @@ export function DataTable({
                     )}
                   </th>
                 ))}
+                {rowActions?.length ? (
+                  <th className="px-3 py-3 text-left font-semibold text-brand-navy-700">Ações</th>
+                ) : null}
               </tr>
             </thead>
             <tbody>
               {pageRows.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={columns.length}
+                    colSpan={columns.length + (rowActions?.length ? 1 : 0)}
                     className="px-3 py-8 text-center text-brand-navy-500"
                   >
                     Nenhum registro encontrado.
@@ -190,6 +205,27 @@ export function DataTable({
                         </td>
                       );
                     })}
+                    {rowActions?.length ? (
+                      <td className="px-3 py-2.5">
+                        <div className="flex flex-wrap gap-1.5">
+                          {rowActions.map((action) => (
+                            <Button
+                              key={action.label}
+                              type="button"
+                              variant="outline"
+                              className="h-8 px-2 text-xs"
+                              onClick={() => {
+                                const id = row.__rowId ?? "";
+                                if (!id) return;
+                                void Promise.resolve(action.onClick(id));
+                              }}
+                            >
+                              {action.label}
+                            </Button>
+                          ))}
+                        </div>
+                      </td>
+                    ) : null}
                   </tr>
                 ))
               )}

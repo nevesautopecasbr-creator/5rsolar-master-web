@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { apiFetch } from "@/lib/api";
-import { DataTable } from "@/components/data-table";
+import { DataTable, type RowAction } from "@/components/data-table";
 
 type DataPageProps = {
   title: string;
@@ -14,7 +14,9 @@ type DataPageProps = {
   searchPlaceholder?: string;
   endpoint: string;
   columns: Array<{ key: string; label: string }>;
+  /** Inclua `__rowId` quando usar rowActions. */
   mapRow: (row: Record<string, unknown>) => Record<string, string>;
+  rowActions?: RowAction[];
 };
 
 export function DataPage({
@@ -27,6 +29,7 @@ export function DataPage({
   endpoint,
   columns,
   mapRow,
+  rowActions,
 }: DataPageProps) {
   const [rows, setRows] = useState<Array<Record<string, string>>>([]);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -69,15 +72,16 @@ export function DataPage({
         </p>
       ) : null}
       <DataTable
-      title={title}
-      description={description}
-      newHref={newHref}
-      newLabel={newLabel}
-      onNewClick={onNewClick}
-      searchPlaceholder={searchPlaceholder}
-      columns={columns}
-      rows={rows}
-    />
+        title={title}
+        description={description}
+        newHref={newHref}
+        newLabel={newLabel}
+        onNewClick={onNewClick}
+        searchPlaceholder={searchPlaceholder}
+        columns={columns}
+        rows={rows}
+        rowActions={rowActions}
+      />
     </>
   );
 }

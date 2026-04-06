@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { DataPage } from "@/components/data-page";
 import { Modal } from "@/components/ui/modal";
 import { Button } from "@/components/ui/button";
+import { apiFetch } from "@/lib/api";
 
 export default function Page() {
   const router = useRouter();
@@ -15,6 +16,7 @@ export default function Page() {
     const project = row.project as { id?: string; name?: string } | undefined;
     const customer = row.customer as { id?: string; name?: string } | undefined;
     return {
+      __rowId: String(row.id ?? ""),
       Projeto: project?.name ?? "—",
       Cliente: customer?.name ?? "—",
       "Valor total":
@@ -25,6 +27,29 @@ export default function Page() {
       Editar: `/contracts/${String(row.id ?? "")}/edit`,
     };
   }, []);
+
+  const rowActions = useMemo(
+    () => [
+      {
+        label: "PDF",
+        onClick: async (rowId: string) => {
+          const r = await apiFetch(`/api/contracts/${rowId}/generate-pdf`, { method: "POST" });
+          if (!r.ok) {
+            const err = await r.json().catch(() => ({}));
+            window.alert(
+              typeof (err as { message?: string }).message === "string"
+                ? (err as { message: string }).message
+                : "Não foi possível gerar o PDF do contrato.",
+            );
+            return;
+          }
+          const data = (await r.json()) as { contractPdfUrl?: string };
+          if (data.contractPdfUrl) window.open(data.contractPdfUrl, "_blank");
+        },
+      },
+    ],
+    [],
+  );
 
   const handleOpenNew = useCallback(() => setModalOpen(true), []);
   const handleGoToForm = useCallback(() => {
@@ -50,6 +75,7 @@ export default function Page() {
           { key: "Editar", label: "Editar" },
         ]}
         mapRow={mapRow}
+        rowActions={rowActions}
       />
       <Modal
         open={modalOpen}
