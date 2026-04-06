@@ -35,6 +35,15 @@ export type FormField = {
   optionLabelKey?: string;
   /** Para type "select": opções estáticas (quando não vier da API) */
   options?: Array<{ value: string; label: string }>;
+  /** Exibe botão "Nova conta" ao lado do select (movimentações de caixa) */
+  newAccountTrigger?: "cash" | "chart";
+};
+
+/** Atualiza valor de campo após criar conta (ex.: selecionar a conta recém-criada) */
+export type FormFieldPatch = {
+  fieldName: string;
+  value: string;
+  version: number;
 };
 
 type DynamicFormProps = {
@@ -48,6 +57,12 @@ type DynamicFormProps = {
   onSuccess?: () => void;
   /** Se true, não renderiza ModuleForm (útil dentro de Modal) */
   inline?: boolean;
+  /** Abre fluxo de cadastro de conta (caixa ou contábil) ao lado do select */
+  onRequestNewAccount?: (kind: "cash" | "chart") => void;
+  /** Incrementar para recarregar opções dos selects (após criar uma conta) */
+  selectOptionsRefreshKey?: number;
+  /** Aplica valor a um campo (ex.: pré-selecionar conta nova) */
+  fieldPatch?: FormFieldPatch;
 };
 
 type ProductOption = {
@@ -115,6 +130,9 @@ export function DynamicForm({
   onSuccessRedirect,
   onSuccess,
   inline = false,
+  onRequestNewAccount,
+  selectOptionsRefreshKey = 0,
+  fieldPatch,
 }: DynamicFormProps) {
   const initial = fields.reduce<Record<string, string | boolean | ProductSelection[]>>(
     (acc, field) => {
@@ -209,7 +227,12 @@ export function DynamicForm({
         });
     }
     return () => { isActive = false; };
-  }, [selectFields]);
+  }, [selectFields, selectOptionsRefreshKey]);
+
+  useEffect(() => {
+    if (!fieldPatch || fieldPatch.version === 0) return;
+    setForm((prev) => ({ ...prev, [fieldPatch.fieldName]: fieldPatch.value }));
+  }, [fieldPatch?.version, fieldPatch?.fieldName, fieldPatch?.value]);
 
   useEffect(() => {
     if (!hasProductsField) {
@@ -410,20 +433,34 @@ export function DynamicForm({
                   {field.optionsUrl && selectLoading[field.name] ? (
                     <div className="text-sm text-brand-navy-600">Carregando...</div>
                   ) : (
-                    <select
-                      className="flex h-9 w-full rounded-md border border-brand-navy-300 bg-white px-3 py-1.5 text-sm text-brand-navy-800 focus:border-brand-orange focus:outline-none focus:ring-1 focus:ring-brand-orange"
-                      value={String(form[field.name] ?? "")}
-                      onChange={(e) =>
-                        setForm((prev) => ({ ...prev, [field.name]: e.target.value }))
-                      }
-                    >
-                      <option value="">Selecione...</option>
-                      {((field.optionsUrl ? (selectOptions[field.name] ?? []) : (field.options ?? []))).map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:gap-2">
+                      <div className="min-w-0 flex-1">
+                        <select
+                          className="flex h-9 w-full rounded-md border border-brand-navy-300 bg-white px-3 py-1.5 text-sm text-brand-navy-800 focus:border-brand-orange focus:outline-none focus:ring-1 focus:ring-brand-orange"
+                          value={String(form[field.name] ?? "")}
+                          onChange={(e) =>
+                            setForm((prev) => ({ ...prev, [field.name]: e.target.value }))
+                          }
+                        >
+                          <option value="">Selecione...</option>
+                          {((field.optionsUrl ? (selectOptions[field.name] ?? []) : (field.options ?? []))).map((opt) => (
+                            <option key={opt.value} value={opt.value}>
+                              {opt.label}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      {field.newAccountTrigger && onRequestNewAccount ? (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          className="h-9 shrink-0 whitespace-nowrap px-3"
+                          onClick={() => onRequestNewAccount(field.newAccountTrigger!)}
+                        >
+                          Nova conta
+                        </Button>
+                      ) : null}
+                    </div>
                   )}
                 </>
               ) : (

@@ -196,11 +196,6 @@ export default function CalendarPage() {
             <Link href="/works/orders/new">
               <Button type="button">Nova tarefa</Button>
             </Link>
-            <Link href="/finance/payables/new">
-              <Button type="button" variant="outline">
-                Nova conta a pagar
-              </Button>
-            </Link>
             <Button
               type="button"
               variant="outline"

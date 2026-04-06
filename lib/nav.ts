@@ -46,6 +46,7 @@ export const navSections: NavSection[] = [
       { label: "Contas a Pagar", href: "/finance/payables" },
       { label: "Contas a Receber", href: "/finance/receivables" },
       { label: "Caixa/Bancos", href: "/finance/cash" },
+      { label: "Novas contas (caixa/contábil)", href: "/finance/accounts/new" },
       { label: "Relatórios", href: "/finance/reports" },
       { label: "Precificação e Custos", href: "/pricing" },
       { label: "Simulador de Preço", href: "/pricing/simulator" },
