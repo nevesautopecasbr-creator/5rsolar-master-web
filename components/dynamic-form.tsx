@@ -117,7 +117,7 @@ function getPayloadValue(name: string, value: string | boolean | ProductSelectio
     const n = Number(str.replace(",", "."));
     return Number.isNaN(n) ? undefined : n;
   }
-  if (field.mask === "money" || field.name === "amount" || field.name === "value" || field.name === "totalValue") return str ? parseMoney(str) : undefined;
+  if (field.mask === "money" || field.name === "amount" || field.name === "value" || field.name === "totalValue" || field.name === "total") return str ? parseMoney(str) : undefined;
   return str || undefined;
 }
 

@@ -24,7 +24,14 @@ export default function Page() {
           optionValueKey: 'id',
           optionLabelKey: 'name',
         },
-        { name: 'quoteId', label: 'Cotação', type: 'text', placeholder: 'ID da cotação' },
+        {
+          name: "quoteId",
+          label: "Cotação",
+          type: "select",
+          optionsUrl: "/api/purchase-quotes",
+          optionValueKey: "id",
+          optionLabelKey: "notes",
+        },
         {
           name: 'status',
           label: 'Status',
@@ -39,7 +46,7 @@ export default function Page() {
             { value: 'CANCELLED', label: 'Cancelado' },
           ],
         },
-        { name: 'total', label: 'Total', type: 'number' },
+        { name: 'total', label: 'Total (R$)', type: 'text', mask: 'money' as const },
         { name: 'notes', label: 'Observações', type: 'text' },
         { name: 'payableDueDate', label: 'Vencimento', type: 'date' },
       ]}
