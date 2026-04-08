@@ -13,7 +13,7 @@ export default function Page() {
         { name: 'dueDate', label: 'Vencimento', type: 'date', required: true },
         { name: 'projectId', label: 'Projeto', type: 'select', optionsUrl: '/api/projects', optionValueKey: 'id', optionLabelKey: 'name' },
         { name: 'customerId', label: 'Cliente', type: 'select', optionsUrl: '/api/customers', optionValueKey: 'id', optionLabelKey: 'name' },
-        { name: 'contractId', label: 'Contrato', type: 'text', placeholder: 'ID do contrato' },
+        { name: 'contractId', label: 'Contrato', type: 'select', optionsUrl: '/api/contracts', optionValueKey: 'id', optionLabelKey: 'title' },
         { name: 'accountId', label: 'Conta contábil', type: 'select', optionsUrl: '/api/chart-accounts', optionValueKey: 'id', optionLabelKey: 'name' },
         {
           name: 'status',

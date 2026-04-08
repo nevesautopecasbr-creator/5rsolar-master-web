@@ -26,7 +26,14 @@ const RECEIVABLE_FIELDS = [
     optionValueKey: "id",
     optionLabelKey: "name",
   },
-  { name: "contractId", label: "Contrato", type: "text" as const, placeholder: "ID do contrato" },
+  {
+    name: "contractId",
+    label: "Contrato",
+    type: "select" as const,
+    optionsUrl: "/api/contracts",
+    optionValueKey: "id",
+    optionLabelKey: "title",
+  },
   {
     name: "accountId",
     label: "Conta contábil",
