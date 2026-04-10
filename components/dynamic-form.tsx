@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ModuleForm } from "@/components/module-form";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -134,6 +134,10 @@ export function DynamicForm({
   selectOptionsRefreshKey = 0,
   fieldPatch,
 }: DynamicFormProps) {
+  /** Evita re-fetch dos selects quando o pai recria o array `fields` a cada render com o mesmo conteúdo */
+  const fieldsRef = useRef(fields);
+  fieldsRef.current = fields;
+
   const initial = fields.reduce<Record<string, string | boolean | ProductSelection[]>>(
     (acc, field) => {
     if (field.defaultValue !== undefined) {
@@ -188,12 +192,23 @@ export function DynamicForm({
     });
   }, [form, requiredFields]);
 
-  const selectFields = useMemo(
-    () => fields.filter((f) => f.type === "select" && f.optionsUrl),
+  const selectOptionsFetchKey = useMemo(
+    () =>
+      JSON.stringify(
+        fields
+          .filter((f) => f.type === "select" && f.optionsUrl)
+          .map((f) => ({
+            name: f.name,
+            url: f.optionsUrl,
+            vk: f.optionValueKey ?? "id",
+            lk: f.optionLabelKey ?? "name",
+          })),
+      ),
     [fields],
   );
 
   useEffect(() => {
+    const selectFields = fieldsRef.current.filter((f) => f.type === "select" && f.optionsUrl);
     if (selectFields.length === 0) return;
     let isActive = true;
     for (const field of selectFields) {
@@ -227,7 +242,7 @@ export function DynamicForm({
         });
     }
     return () => { isActive = false; };
-  }, [selectFields, selectOptionsRefreshKey]);
+  }, [selectOptionsFetchKey, selectOptionsRefreshKey]);
 
   useEffect(() => {
     if (!fieldPatch || fieldPatch.version === 0) return;

@@ -30,7 +30,7 @@ export default function Page() {
           type: "select",
           optionsUrl: "/api/purchase-quotes",
           optionValueKey: "id",
-          optionLabelKey: "notes",
+          optionLabelKey: "label",
         },
         {
           name: 'status',

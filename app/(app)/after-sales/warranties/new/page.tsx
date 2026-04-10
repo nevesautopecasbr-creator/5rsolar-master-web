@@ -8,11 +8,25 @@ export default function Page() {
       endpoint="/api/warranties"
       onSuccessRedirect="/after-sales/warranties"
       fields={[
-        { name: 'customerId', label: 'Cliente', type: 'text', placeholder: 'ID do cliente' },
-        { name: 'projectId', label: 'Projeto', type: 'text', placeholder: 'ID do projeto' },
-        { name: 'startDate', label: 'Início', type: 'date' },
-        { name: 'endDate', label: 'Fim', type: 'date' },
-        { name: 'terms', label: 'Termos', type: 'text' },
+        {
+          name: "customerId",
+          label: "Cliente",
+          type: "select",
+          optionsUrl: "/api/customers",
+          optionValueKey: "id",
+          optionLabelKey: "name",
+        },
+        {
+          name: "projectId",
+          label: "Projeto",
+          type: "select",
+          optionsUrl: "/api/projects",
+          optionValueKey: "id",
+          optionLabelKey: "name",
+        },
+        { name: "startDate", label: "Início", type: "date", required: true },
+        { name: "endDate", label: "Fim", type: "date", required: true },
+        { name: "terms", label: "Termos", type: "text" },
       ]}
     />
   );
