@@ -11,7 +11,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Logo } from "@/components/logo";
 import { IconSolarRays } from "@/components/icons/solar-icons";
 import { getApiBaseUrl } from "@/lib/api";
-import { setSessionCookie } from "@/lib/session";
+import { setSessionCookie, setUserCompanyContext } from "@/lib/session";
 
 function LoginForm() {
   const searchParams = useSearchParams();
@@ -53,6 +53,15 @@ function LoginForm() {
         setError("Falha ao entrar. Tente novamente.");
       }
       return;
+    }
+
+    try {
+      const body = (await response.json()) as {
+        user?: { companyId?: string | null; companyName?: string | null };
+      };
+      setUserCompanyContext(body.user?.companyId ?? null, body.user?.companyName ?? null);
+    } catch {
+      // segue só com cookie de sessão; AuthGuard preenche empresa via /api/auth/me
     }
 
     // Mantém sessão também no domínio do frontend para evitar loop de redirecionamento
